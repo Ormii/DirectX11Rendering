@@ -10,6 +10,7 @@
 #include <tchar.h>
 #include <windows.h>
 #include <wrl.h>
+#include <intsafe.h>
 
 #include <vector>
 
@@ -19,6 +20,8 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "d3dcompiler.lib")
 
 /*---------------------------
 *		   ImGui
@@ -27,6 +30,12 @@
 #include <imgui_impl_dx11.h>
 #include <imgui_impl_win32.h>
 
+
+using Microsoft::WRL::ComPtr;
+using std::vector;
+using std::wstring;
+
+
 /*---------------------------
 *		custom header
 -----------------------------*/
@@ -34,11 +43,6 @@
 #include "CoreMacro.h"
 
 #include "EngineBase.h"
-
-
-using Microsoft::WRL::ComPtr;
-using std::vector;
-using std::wstring;
 
 
 #define MAIN_WINDOW_WIDTH	1280

@@ -7,6 +7,21 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{2612d789-0c75-4a19-bdcd-a874b3fdde78}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{a679a588-e6bf-4498-90bd-e2439aa53b6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Mesh">
+      <UniqueIdentifier>{b6c0d2e0-4bb1-4191-b29c-9c4131aa37aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Mesh\Prob">
+      <UniqueIdentifier>{09c29bbf-9da8-49df-8e9d-136a3198e68f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Camera">
+      <UniqueIdentifier>{45f69cef-18ad-4c0f-b52c-6e0cc55b3ae7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Light">
+      <UniqueIdentifier>{b1eee522-a7dc-48d4-9a5d-d7a0517411c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
