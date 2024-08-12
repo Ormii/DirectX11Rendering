@@ -1,6 +1,16 @@
 #pragma once
 // add headers that you want to pre-compile here
 #include "CorePch.h"
+
+
+#define MAX_LIGHTS 3
+
+#include "Material.h"
+#include "Light.h"
+#include "Camera.h"
+#include "Mesh.h"
+#include "Square.h"
+
 #include "Engine.h"
 
 

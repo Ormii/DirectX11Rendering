@@ -9,7 +9,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 EngineBase::EngineBase()
-	:m_screenWidth(MAIN_WINDOW_WIDTH), m_screenHeight(MAIN_WINDOW_HEIGHT), m_hwnd(0), m_viewport(D3D11_VIEWPORT())
+	:m_screenWidth(MAIN_WINDOW_WIDTH), m_screenHeight(MAIN_WINDOW_HEIGHT), m_hwnd(0), numQualityLevels(0), m_viewport(D3D11_VIEWPORT())
 {
 	g_EngineBase = this;
 }
@@ -35,6 +35,8 @@ int EngineBase::Run()
         {
             Update();
             Render();
+
+            m_swapChain->Present(1, 0);
         }
     }
 
@@ -119,11 +121,50 @@ bool EngineBase::InitDirectX()
     createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
+    ComPtr<ID3D11Device> device;
+    ComPtr<ID3D11DeviceContext> context;
+
     const D3D_FEATURE_LEVEL featureLevels[2] = {
         D3D_FEATURE_LEVEL_11_0,
         D3D_FEATURE_LEVEL_9_3 };
 
     D3D_FEATURE_LEVEL featureLevel;
+
+    if (FAILED(D3D11CreateDevice(
+        nullptr,    // Specify nullptr to use the default adapter.
+        driverType, // Create a device using the hardware graphics driver.
+        0, // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
+        createDeviceFlags, // Set debug and Direct2D compatibility flags.
+        featureLevels,     // List of feature levels this app can support.
+        ARRAYSIZE(featureLevels), // Size of the list above.
+        D3D11_SDK_VERSION,     // Always set this to D3D11_SDK_VERSION for
+        // Microsoft Store apps.
+        device.GetAddressOf(), // Returns the Direct3D device created.
+        &featureLevel,         // Returns feature level of device created.
+        context.GetAddressOf() // Returns the device immediate context.
+    ))) {
+       
+        return false;
+    }
+
+    if (featureLevel != D3D_FEATURE_LEVEL_11_0)
+    {
+        return false;
+    }
+
+    device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &numQualityLevels);
+
+    if (numQualityLevels <= 0) {
+        return false;
+    }
+
+    if (FAILED(device.As(&m_device))) {
+        return false;
+    }
+
+    if (FAILED(context.As(&m_context))) {
+        return false;
+    }
 
     DXGI_SWAP_CHAIN_DESC sd;
     ZeroMemory(&sd, sizeof(sd));
@@ -137,8 +178,14 @@ bool EngineBase::InitDirectX()
     sd.Windowed = TRUE;
     sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    sd.SampleDesc.Count = 1;
-    sd.SampleDesc.Quality = 0;
+    if (numQualityLevels > 0) {
+        sd.SampleDesc.Count = 4;
+        sd.SampleDesc.Quality = numQualityLevels - 1;
+    }
+    else {
+        sd.SampleDesc.Count = 1;
+        sd.SampleDesc.Quality = 0;
+    }
 
     if (FAILED(D3D11CreateDeviceAndSwapChain(
         nullptr,
@@ -149,56 +196,77 @@ bool EngineBase::InitDirectX()
         1,
         D3D11_SDK_VERSION,
         &sd,
-        &m_swapChain,
-        &m_device,
+        m_swapChain.GetAddressOf(),
+        m_device.GetAddressOf(),
         &featureLevel,
-        &m_context
+        m_context.GetAddressOf()
     )))
     {
         return false;
     }
 
-    if (featureLevel != D3D_FEATURE_LEVEL_11_0)
-    {
+    if (!CreateRenderTargetView())
         return false;
-    }
 
-    UINT numQualityLevels = 0;
-    m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &numQualityLevels);
-  
+    SetViewport();
 
-//-----------------------------------------------------------------------
-//                      RenderTargetView  
-//-----------------------------------------------------------------------
+    if (!CreateRasterizerState())
+        return false;
 
-    ID3D11Texture2D* pBackBuffer;
-    m_swapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
+
+    if (!CreateDepthStencilBuffer())
+        return false;
+
+    return true;
+}
+
+float EngineBase::GetAspectRatio()
+{
+    return float(m_screenWidth) / m_screenHeight;
+}
+
+bool EngineBase::CreateRenderTargetView()
+{
+    ComPtr<ID3D11Texture2D> pBackBuffer;
+    m_swapChain->GetBuffer(0, IID_PPV_ARGS(pBackBuffer.GetAddressOf()));
     if (pBackBuffer)
     {
-        m_device->CreateRenderTargetView(pBackBuffer, NULL, &m_renderTargetView);
-        pBackBuffer->Release();
+        m_device->CreateRenderTargetView(pBackBuffer.Get(), NULL, m_renderTargetView.GetAddressOf());
     }
-    else 
+    else
     {
         return false;
     }
 
-/*-----------------------------------------------------------------------
-*                           Rasterizer
--------------------------------------------------------------------------*/
+    return true;
+}
 
-    D3D11_RASTERIZER_DESC rastDesc;
-    ZeroMemory(&rastDesc, sizeof(D3D11_RASTERIZER_DESC));
-    rastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-    rastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
-    rastDesc.FrontCounterClockwise = false;
+bool EngineBase::CreateRasterizerState()
+{
+    D3D11_RASTERIZER_DESC solidRastDesc;
+    ZeroMemory(&solidRastDesc, sizeof(D3D11_RASTERIZER_DESC));
+    solidRastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
+    solidRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
+    solidRastDesc.FrontCounterClockwise = false;
 
-    m_device->CreateRasterizerState(&rastDesc, &m_rasterizerState);
+    if (FAILED(m_device->CreateRasterizerState(&solidRastDesc, &m_solidRasterizerState)))
+        return false;
 
-/*-----------------------------------------------------------------------
-*                           View port
--------------------------------------------------------------------------*/
 
+    D3D11_RASTERIZER_DESC wireRastDesc;
+    ZeroMemory(&wireRastDesc, sizeof(D3D11_RASTERIZER_DESC));
+    wireRastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
+    wireRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
+    wireRastDesc.FrontCounterClockwise = false;
+
+    if (FAILED(m_device->CreateRasterizerState(&wireRastDesc, &m_wireRasterizerState)))
+        return false;
+
+    return true;
+}
+
+void EngineBase::SetViewport()
+{
     ZeroMemory(&m_viewport, sizeof(D3D11_VIEWPORT));
     m_viewport.TopLeftX = 0;
     m_viewport.TopLeftY = 0;
@@ -208,11 +276,10 @@ bool EngineBase::InitDirectX()
     m_viewport.MaxDepth = 1.0f;
     m_context->RSSetViewports(1, &m_viewport);
 
+}
 
-/*-----------------------------------------------------------------------
-*                           Depth Stencil
--------------------------------------------------------------------------*/
-
+bool EngineBase::CreateDepthStencilBuffer()
+{
     D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
     depthStencilBufferDesc.Width = m_screenWidth;
     depthStencilBufferDesc.Height = m_screenHeight;
@@ -234,11 +301,11 @@ bool EngineBase::InitDirectX()
 
     if (FAILED(m_device->CreateTexture2D(&depthStencilBufferDesc, 0,
         m_depthStencilBuffer.GetAddressOf())))
-    {    
+    {
         return false;
     }
     if (FAILED(
-        m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), 0, &m_depthStencilView))) 
+        m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), 0, &m_depthStencilView)))
     {
         return false;
     }
@@ -249,7 +316,7 @@ bool EngineBase::InitDirectX()
     depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
     depthStencilDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL;
     if (FAILED(m_device->CreateDepthStencilState(&depthStencilDesc,
-        m_depthStencilState.GetAddressOf()))) 
+        m_depthStencilState.GetAddressOf())))
     {
         return false;
     }
@@ -257,15 +324,46 @@ bool EngineBase::InitDirectX()
     return true;
 }
 
+void CheckResult(HRESULT hr, ID3DBlob* errorBlob) {
+    if (FAILED(hr)) {
+
+        if ((hr & D3D11_ERROR_FILE_NOT_FOUND) != 0) {
+            std::cout << "File not found." << std::endl;
+        }
+
+        if (errorBlob) {
+            std::cout << "Shader compile error\n"
+                << (char*)errorBlob->GetBufferPointer() << std::endl;
+        }
+    }
+}
+
+
 void EngineBase::CreateVertexShaderAndInputLayout(const wstring& filename, const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
 {
     ComPtr<ID3DBlob> shaderBlob;
     ComPtr<ID3DBlob> errorBlob;
 
-    HRESULT hr = D3DCompileFromFile(filename.c_str(), 0, 0, "main", "vs_5_0", 0, 0, &shaderBlob, &errorBlob);
-        
-    m_device->CreateVertexShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &vertexShader);
-    m_device->CreateInputLayout(inputElements.data(), UINT(inputElements.size()), shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), &inputLayout);
+    UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+    
+    HRESULT hr = D3DCompileFromFile(
+        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+        "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
+
+    CheckResult(hr, errorBlob.Get());
+
+    m_device->CreateVertexShader(shaderBlob->GetBufferPointer(),
+        shaderBlob->GetBufferSize(), NULL,
+        &vertexShader);
+
+    m_device->CreateInputLayout(inputElements.data(),
+        UINT(inputElements.size()),
+        shaderBlob->GetBufferPointer(),
+        shaderBlob->GetBufferSize(), &inputLayout);
 }
 
 void EngineBase::CreatePixelShader(const wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
@@ -273,7 +371,17 @@ void EngineBase::CreatePixelShader(const wstring& filename, ComPtr<ID3D11PixelSh
     ComPtr<ID3DBlob> shaderBlob;
     ComPtr<ID3DBlob> errorBlob;
 
-    HRESULT hr = D3DCompileFromFile(filename.c_str(), 0, 0, "main", "ps_5_0", 0, 0, &shaderBlob, &errorBlob);
+
+    UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+    HRESULT hr = D3DCompileFromFile(
+        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+        "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
+
+    CheckResult(hr, errorBlob.Get());
 
     m_device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
 }

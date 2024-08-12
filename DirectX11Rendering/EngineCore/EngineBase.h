@@ -21,7 +21,17 @@ protected:
 	bool InitMainWindow();
 	bool InitDirectX();
 
+public:
+	float GetAspectRatio();
+
 protected:
+	bool CreateRenderTargetView();
+	bool CreateRasterizerState();
+
+	void SetViewport();
+	bool CreateDepthStencilBuffer();
+
+public:
 	void CreateVertexShaderAndInputLayout(const wstring& filename,
 		const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements,
 		ComPtr<ID3D11VertexShader>& vertexShader,
@@ -42,7 +52,7 @@ protected:
 		bufferDesc.StructureByteStride = sizeof(T_VERTEX);
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0, };
-		vertexBufferData.pSysMem = vertices.size();
+		vertexBufferData.pSysMem = vertices.data();
 		vertexBufferData.SysMemPitch = 0;
 		vertexBufferData.SysMemSlicePitch = 0;
 
@@ -50,13 +60,13 @@ protected:
 	}
 
 	template <typename T_CONSTANT>
-	void CreateConstantBuffer(const T_CONSTANT& constantBufferData, ComPtr<T_CONSTANT>& constantBuffer)
+	void CreateConstantBuffer(const T_CONSTANT& constantBufferData, ComPtr<ID3D11Buffer>& constantBuffer)
 	{
 		D3D11_BUFFER_DESC bufferDesc;
 		bufferDesc.ByteWidth = sizeof(constantBufferData);
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 		bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE;
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.StructureByteStride = 0;
 
@@ -81,16 +91,29 @@ protected:
 	int m_screenHeight;
 	HWND m_hwnd;
 
+public:
+	ComPtr<ID3D11Device> GetDevice() { return m_device; }
+	ComPtr<ID3D11DeviceContext> GetContext() { return m_context; }
+
+	ComPtr<ID3D11RasterizerState> GetSolidRasterizerState() { return m_solidRasterizerState; }
+	ComPtr<ID3D11RasterizerState> GetWiredRasterizerState() { return m_wireRasterizerState; }
+
+
 protected:
 	ComPtr<ID3D11Device> m_device;
 	ComPtr<ID3D11DeviceContext> m_context;
 	ComPtr<IDXGISwapChain> m_swapChain;
 	ComPtr<ID3D11RenderTargetView> m_renderTargetView;
-	ComPtr<ID3D11RasterizerState> m_rasterizerState;
+	ComPtr<ID3D11RasterizerState> m_solidRasterizerState;
+	ComPtr<ID3D11RasterizerState> m_wireRasterizerState;
 
 	ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
 	ComPtr<ID3D11DepthStencilView> m_depthStencilView;
 	ComPtr<ID3D11DepthStencilState> m_depthStencilState;
 
 	D3D11_VIEWPORT m_viewport;
+
+	UINT numQualityLevels;
 };
+
+extern EngineBase* g_EngineBase;
