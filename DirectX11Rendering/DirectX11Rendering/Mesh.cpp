@@ -48,7 +48,7 @@ bool Mesh::Initialize()
 	return true;
 }
 
-void Mesh::Update()
+void Mesh::Update(float dt)
 {
 	using namespace DirectX;
 

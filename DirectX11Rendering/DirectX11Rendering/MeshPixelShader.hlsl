@@ -5,7 +5,7 @@ cbuffer BasicPixelConstantBuffer : register(b0)
     float3 eyeWorld;
     bool useTexture;
     Material material;
-    Light light[MAX_LIGHTS];
+    LightData light[MAX_LIGHTS];
 };
 
 float4 main(PixelShaderInput input) : SV_TARGET

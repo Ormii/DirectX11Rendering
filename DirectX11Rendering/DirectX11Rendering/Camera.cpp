@@ -3,7 +3,7 @@
 
 Camera::Camera()
 {
-	m_position = Vector3(0.0f,0.0f,2.0f);
+	m_position = Vector3(0.0f,0.0f,6.0f);
 	m_rotation = Vector3(0.0f);
 }
 

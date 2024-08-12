@@ -14,7 +14,7 @@ struct MeshPixelConstantBuffer {
 	Vector3 eyeWorld;         
 	bool useTexture;          
 	Material material;        
-	Light lights[MAX_LIGHTS]; 
+	LightData lights[MAX_LIGHTS]; 
 };
 
 class Mesh : public Object
@@ -37,13 +37,11 @@ public:
 	MeshData GetMeshData() { return m_meshData; }
 
 public:
-	virtual void Update();
+	virtual void Update(float dt);
 	virtual void Render();
 
+
 protected:
-	Vector3 m_modelTranslation = Vector3(0.0f);
-	Vector3 m_modelRotation = Vector3(-0.6f, 1.0f, 0.0f);
-	Vector3 m_modelScaling = Vector3(0.5f);
 
 	ComPtr<ID3D11Buffer> m_vertexBuffer;
 	ComPtr<ID3D11Buffer> m_indexBuffer;

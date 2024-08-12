@@ -11,8 +11,10 @@ public:
 
 public:
 	virtual bool Initialize();
-	virtual void Update() = 0;
+	virtual void Update(float dt) = 0;
 	virtual void Render() = 0;
+
+	virtual void UpdateGUI() = 0;
 
 public:
 	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -20,6 +22,7 @@ public:
 protected:
 	bool InitMainWindow();
 	bool InitDirectX();
+	bool InitGUI();
 
 public:
 	float GetAspectRatio();

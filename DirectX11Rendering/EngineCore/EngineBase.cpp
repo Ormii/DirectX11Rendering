@@ -3,6 +3,8 @@
 
 EngineBase* g_EngineBase = nullptr;
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) 
 {
 	return g_EngineBase->MsgProc(hWnd, msg, wParam, lParam);
@@ -17,6 +19,10 @@ EngineBase::EngineBase()
 EngineBase::~EngineBase()
 {
     DestroyWindow(m_hwnd);
+
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
 	
     g_EngineBase = nullptr;
 }
@@ -33,8 +39,27 @@ int EngineBase::Run()
         }
         else 
         {
-            Update();
+            ImGui_ImplDX11_NewFrame();
+            ImGui_ImplWin32_NewFrame();
+
+            ImGui::NewFrame();
+            ImGui::Begin("Control");
+
+            ImGui::Text("%.3f ms/frame (%.1f FPS)",
+                1000.0f / ImGui::GetIO().Framerate,
+                ImGui::GetIO().Framerate);
+
+            ImGui::SetWindowPos(ImVec2(0.0f, 0.0f));
+
+            UpdateGUI();
+
+            ImGui::End();
+            ImGui::Render();
+
+            Update(ImGui::GetIO().DeltaTime);
             Render();
+
+            ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
             m_swapChain->Present(1, 0);
         }
@@ -51,16 +76,25 @@ bool EngineBase::Initialize()
     if (!InitDirectX())
         return false;
 
+    if (!InitGUI())
+        return false;
+
     return true;
 }
 
 LRESULT EngineBase::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+        return true;
+
     switch (msg)
     {
         case WM_DESTROY:
+        {
             ::PostQuitMessage(0);
             return 0;
+        }
+        break;
     }
 
     return ::DefWindowProc(hwnd, msg, wParam, lParam);
@@ -131,17 +165,17 @@ bool EngineBase::InitDirectX()
     D3D_FEATURE_LEVEL featureLevel;
 
     if (FAILED(D3D11CreateDevice(
-        nullptr,    // Specify nullptr to use the default adapter.
-        driverType, // Create a device using the hardware graphics driver.
-        0, // Should be 0 unless the driver is D3D_DRIVER_TYPE_SOFTWARE.
-        createDeviceFlags, // Set debug and Direct2D compatibility flags.
-        featureLevels,     // List of feature levels this app can support.
-        ARRAYSIZE(featureLevels), // Size of the list above.
-        D3D11_SDK_VERSION,     // Always set this to D3D11_SDK_VERSION for
-        // Microsoft Store apps.
-        device.GetAddressOf(), // Returns the Direct3D device created.
-        &featureLevel,         // Returns feature level of device created.
-        context.GetAddressOf() // Returns the device immediate context.
+        nullptr,    
+        driverType,
+        0, 
+        createDeviceFlags, 
+        featureLevels,     
+        ARRAYSIZE(featureLevels), 
+        D3D11_SDK_VERSION,  
+      
+        device.GetAddressOf(), 
+        &featureLevel,        
+        context.GetAddressOf() 
     ))) {
        
         return false;
@@ -216,6 +250,26 @@ bool EngineBase::InitDirectX()
 
     if (!CreateDepthStencilBuffer())
         return false;
+
+    return true;
+}
+
+bool EngineBase::InitGUI()
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    io.DisplaySize = ImVec2(float(m_screenWidth), float(m_screenHeight));
+    ImGui::StyleColorsDark();
+
+    if (!ImGui_ImplDX11_Init(m_device.Get(), m_context.Get())) {
+        return false;
+    }
+
+    if (!ImGui_ImplWin32_Init(m_hwnd)) {
+        return false;
+    }
 
     return true;
 }

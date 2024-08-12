@@ -22,14 +22,14 @@
     <Filter Include="Object\Light">
       <UniqueIdentifier>{b1eee522-a7dc-48d4-9a5d-d7a0517411c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\Material">
-      <UniqueIdentifier>{d74c68a1-c40b-4f6f-bf21-5d79b520ccec}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader">
       <UniqueIdentifier>{3286944f-1a50-4e85-bed1-d2dc8e370041}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shader\Mesh">
       <UniqueIdentifier>{91d7e455-aee3-48d3-b660-04248220afd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Material">
+      <UniqueIdentifier>{d74c68a1-c40b-4f6f-bf21-5d79b520ccec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -49,7 +49,7 @@
       <Filter>Object\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Object\Material</Filter>
+      <Filter>Material</Filter>
     </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Object\Light</Filter>
@@ -78,7 +78,7 @@
       <Filter>Object\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="Material.h">
-      <Filter>Object\Material</Filter>
+      <Filter>Material</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Object\Light</Filter>

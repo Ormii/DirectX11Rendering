@@ -15,8 +15,13 @@ struct Material
 };
 
 // ����
-struct Light
+struct LightData
 {
+    float4 lightType;
+    float dummy1;
+    float dummy2;
+    float dummy3;
+
     float3 strength;
     float fallOffStart;
     float3 direction;
@@ -35,7 +40,7 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal,
     return mat.ambient + (mat.diffuse + specular) * lightStrength;
 }
 
-float3 ComputeDirectionalLight(Light L, Material mat, float3 normal,
+float3 ComputeDirectionalLight(LightData L, Material mat, float3 normal,
                                 float3 toEye)
 {
     float3 lightVec = -L.direction;
@@ -51,7 +56,7 @@ float CalcAttenuation(float d, float falloffStart, float falloffEnd)
     return saturate((falloffEnd - d) / (falloffEnd - falloffStart));
 }
 
-float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal,
+float3 ComputePointLight(LightData L, Material mat, float3 pos, float3 normal,
                           float3 toEye)
 {
     float3 lightVec = L.position - pos;
@@ -75,7 +80,7 @@ float3 ComputePointLight(Light L, Material mat, float3 pos, float3 normal,
     }
 }
 
-float3 ComputeSpotLight(Light L, Material mat, float3 pos, float3 normal,
+float3 ComputeSpotLight(LightData L, Material mat, float3 pos, float3 normal,
                          float3 toEye)
 {
     float3 lightVec = L.position - pos;

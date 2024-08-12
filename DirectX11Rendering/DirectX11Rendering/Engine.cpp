@@ -21,9 +21,14 @@ bool Engine::Initialize()
 		return false;
 
 	m_mainCamera = std::make_shared<Camera>();
-	meshes.push_back(std::make_shared<Square>());
+
+	auto floor = std::make_shared<Square>();
+	floor->GetRotation() = Vector3(-90.0f, 0.0f, 0.0f);
+
+	m_meshes.push_back(floor);
 	
-	for (auto& mesh : meshes)
+
+	for (auto& mesh : m_meshes)
 	{
 		mesh->Initialize();
 	}
@@ -31,14 +36,21 @@ bool Engine::Initialize()
 	return true;
 }
 
-void Engine::Update()
+void Engine::Update(float dt)
 {
 	m_mainCamera->Update();
-	for (auto& mesh : meshes)
+	for (auto& mesh : m_meshes)
 	{
-		mesh->Update();
+		mesh->Update(dt);
 	}
 
+}
+
+void Engine::UpdateGUI()
+{
+	ImGui::Checkbox("Draw WireFrame", &g_bUseDrawWireFrame);
+	ImGui::Checkbox("Draw Normals", &g_bUseDrawNormals);
+	ImGui::Checkbox("Use Perspective", &g_bUsePerspectiveProjection);
 }
 
 void Engine::Render()
@@ -52,7 +64,7 @@ void Engine::Render()
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
 
-	for (auto& mesh : meshes)
+	for (auto& mesh : m_meshes)
 	{
 		mesh->Render();
 	}
