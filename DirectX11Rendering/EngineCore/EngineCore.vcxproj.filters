@@ -11,6 +11,9 @@
     <Filter Include="Engine Base">
       <UniqueIdentifier>{4e3d527c-0c63-4b68-9756-7c028f2107bd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Thread">
+      <UniqueIdentifier>{dd0c9443-7ea2-4fcc-9e34-e88350acac4b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -28,6 +31,12 @@
     <ClInclude Include="EngineBase.h">
       <Filter>Engine Base</Filter>
     </ClInclude>
+    <ClInclude Include="ThreadManager.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadInfo.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -35,6 +44,12 @@
     </ClCompile>
     <ClCompile Include="EngineBase.cpp">
       <Filter>Engine Base</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadManager.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadInfo.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

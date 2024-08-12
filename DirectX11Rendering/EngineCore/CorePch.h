@@ -11,8 +11,13 @@
 #include <windows.h>
 #include <wrl.h>
 #include <intsafe.h>
+#include <thread>
+#include <mutex>
+#include <functional>
 
 #include <vector>
+
+using namespace std;
 
 /*---------------------------
 *		  DirectX11
@@ -46,8 +51,10 @@ using std::wstring;
 -----------------------------*/
 #include "Types.h"
 #include "CoreMacro.h"
-
+#include "ThreadInfo.h"
 #include "EngineBase.h"
+
+#include "ThreadManager.h"
 
 
 #define MAIN_WINDOW_WIDTH	1280

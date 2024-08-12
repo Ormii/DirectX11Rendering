@@ -43,7 +43,7 @@ public:
 
 public:
 	virtual void Update(float dt) override;
-	virtual void Render();
+	virtual void Render(ComPtr<ID3D11DeviceContext> deferredContext);
 
 
 protected:

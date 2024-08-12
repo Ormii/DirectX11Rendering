@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EngineBase.h"
+#include "ThreadManager.h"
 
 EngineBase* g_EngineBase = nullptr;
 
@@ -23,7 +24,7 @@ EngineBase::~EngineBase()
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
-	
+
     g_EngineBase = nullptr;
 }
 

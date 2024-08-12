@@ -5,14 +5,16 @@ bool g_bUsePerspectiveProjection = true;
 bool g_bUseDrawNormals = true;
 bool g_bUseDrawWireFrame = false;
 
+ThreadManager<Engine>* g_ThreadManager = nullptr;
+
 Engine::Engine()
 {
-
+	g_ThreadManager = new ThreadManager<Engine>();
 }
 
 Engine::~Engine()
 {
-
+	delete g_ThreadManager;
 }
 
 bool Engine::Initialize()
@@ -65,6 +67,8 @@ bool Engine::Initialize()
 
 	m_targetMesh = floor;
 	m_targetLight = spotLight;
+
+	m_commandLists.resize(2);
 
 	return true;
 }
@@ -122,12 +126,56 @@ void Engine::Render()
 	m_context->ClearDepthStencilView(m_depthStencilView.Get(),
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
+
+	for (int i = 0; i < 2; ++i)
+	{
+		ThreadParam MeshRenderThreadParam{};
+		MeshRenderThreadParam.commandListIdx = i;
+
+		g_ThreadManager->Launch(&Engine::RenderMeshes, this, MeshRenderThreadParam);
+	}
+
+	g_ThreadManager->Join();
+
+	for (auto& commandList : m_commandLists) {
+		m_context->ExecuteCommandList(commandList.Get(), FALSE);
+	}
+
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+}
+
+void Engine::RenderMeshes(ThreadParam param)
+{
+	ComPtr<ID3D11DeviceContext> deferredContext;
+
+	m_lock.lock();
+	m_device->CreateDeferredContext(0, &deferredContext);
+	m_lock.unlock();
+
+	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
+		m_depthStencilView.Get());
+	deferredContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(m_screenWidth);  // 뷰포트의 너비
+	viewport.Height = static_cast<float>(m_screenHeight); // 뷰포트의 높이
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	deferredContext->RSSetViewports(1, &viewport);
 
 	for (auto& mesh : m_meshes)
 	{
-		mesh->Render();
+		mesh->Render(deferredContext);
 	}
+
+	ComPtr<ID3D11CommandList> commandList;
+	deferredContext->FinishCommandList(FALSE, &commandList);
+
+	m_lock.lock();
+	m_commandLists[param.commandListIdx] = commandList;
+	m_lock.unlock();
 }

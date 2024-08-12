@@ -19,6 +19,13 @@ public:
 	virtual void UpdateGUI() override;
 	virtual void Render() override;
 
+
+private:
+	vector<ComPtr<ID3D11CommandList>> m_commandLists;
+
+	void RenderMeshes(ThreadParam param);
+
+	mutex m_lock;
 public:
 	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }
 
@@ -33,3 +40,5 @@ private:
 	std::weak_ptr<Mesh> m_targetMesh;
 	std::weak_ptr<Light> m_targetLight;
 };
+
+extern ThreadManager<Engine>* g_ThreadManager;

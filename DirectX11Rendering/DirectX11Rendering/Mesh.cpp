@@ -130,35 +130,35 @@ void Mesh::Update(float dt)
 	pEngine->UpdateBuffer(m_MeshPixelConstantBufferData, m_pixelConstantBuffer);
 }
 
-void Mesh::Render()
+void Mesh::Render(ComPtr<ID3D11DeviceContext> deferredContext)
 {
 	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
 	if (pEngine == nullptr)
 		return;
 
-	pEngine->GetContext()->VSSetShader(m_MeshVertexShader.Get(), 0, 0);
-	pEngine->GetContext()->VSSetConstantBuffers(
+	deferredContext->VSSetShader(m_MeshVertexShader.Get(), 0, 0);
+	deferredContext->VSSetConstantBuffers(
 		0, 1, m_vertexConstantBuffer.GetAddressOf());
 
-	pEngine->GetContext()->PSSetConstantBuffers(
+	deferredContext->PSSetConstantBuffers(
 		0, 1, m_pixelConstantBuffer.GetAddressOf());
-	pEngine->GetContext()->PSSetShader(m_MeshPixelShader.Get(), 0, 0);
+	deferredContext->PSSetShader(m_MeshPixelShader.Get(), 0, 0);
 
 	if (g_bUseDrawWireFrame) {
-		pEngine->GetContext()->RSSetState(pEngine->GetWiredRasterizerState().Get());
+		deferredContext->RSSetState(pEngine->GetWiredRasterizerState().Get());
 	}
 	else {
-		pEngine->GetContext()->RSSetState(pEngine->GetSolidRasterizerState().Get());
+		deferredContext->RSSetState(pEngine->GetSolidRasterizerState().Get());
 	}
 
 	UINT stride = sizeof(MeshVertex);
 	UINT offset = 0;
-	pEngine->GetContext()->IASetInputLayout(m_MeshInputLayout.Get());
-	pEngine->GetContext()->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(),
+	deferredContext->IASetInputLayout(m_MeshInputLayout.Get());
+	deferredContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(),
 		&stride, &offset);
-	pEngine->GetContext()->IASetIndexBuffer(m_indexBuffer.Get(),
+	deferredContext->IASetIndexBuffer(m_indexBuffer.Get(),
 		DXGI_FORMAT_R16_UINT, 0);
-	pEngine->GetContext()->IASetPrimitiveTopology(
+	deferredContext->IASetPrimitiveTopology(
 		D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	pEngine->GetContext()->DrawIndexed(m_indexCount, 0, 0);
+	deferredContext->DrawIndexed(m_indexCount, 0, 0);
 }
