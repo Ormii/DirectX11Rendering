@@ -13,8 +13,10 @@ struct MeshVertexConstantBuffer
 struct MeshPixelConstantBuffer {
 	Vector3 eyeWorld;         
 	bool useTexture;          
-	Material material;        
-	LightData lights[MAX_LIGHTS]; 
+	Material material;
+	LightData directionalLight;
+	LightData pointlights[MAX_LIGHTS];
+	LightData spotlights[MAX_LIGHTS];
 };
 
 class Mesh : public Object
@@ -33,11 +35,14 @@ public:
 	ComPtr<ID3D11Buffer>& GetVertexConstantBuffer() { return m_vertexConstantBuffer; }
 	ComPtr<ID3D11Buffer>& GetPixelConstantBuffer() { return m_pixelConstantBuffer; }
 
-public:
-	MeshData GetMeshData() { return m_meshData; }
+	MeshPixelConstantBuffer& GetPixelConstantBufferData() { return m_MeshPixelConstantBufferData;}
 
 public:
-	virtual void Update(float dt);
+	MeshData GetMeshData() { return m_meshData; }
+	Material& GetMaterial() { return m_material; }
+
+public:
+	virtual void Update(float dt) override;
 	virtual void Render();
 
 
@@ -58,5 +63,6 @@ protected:
 
 protected:
 	MeshData m_meshData;
+	Material m_material;
 };
 

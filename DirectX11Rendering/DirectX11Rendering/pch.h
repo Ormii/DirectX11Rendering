@@ -3,7 +3,7 @@
 #include "CorePch.h"
 
 
-#define MAX_LIGHTS 3
+#define MAX_LIGHTS 12
 
 #include "Material.h"
 #include "Light.h"

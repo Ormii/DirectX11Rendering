@@ -6,9 +6,10 @@ using DirectX::SimpleMath::Vector3;
 
 enum class LightType
 {
-	LightType_DirectionalLight	= 0,
-	LightType_PointLight		= 1,
-	LightType_SpotLight			= 2,
+	LightType_None				= 0,
+	LightType_DirectionalLight	= 1,
+	LightType_PointLight		= 2,
+	LightType_SpotLight			= 3,
 };
 
 struct LightData
@@ -32,8 +33,11 @@ public:
 	Light(LightData& lightData) :m_lightData(lightData) {}
 
 public:
+	virtual void Update(float dt) override;
+
+public:
 	LightData& GetLightData() { return m_lightData; }
 
 protected:
-	LightData& m_lightData;
+	LightData m_lightData;
 };

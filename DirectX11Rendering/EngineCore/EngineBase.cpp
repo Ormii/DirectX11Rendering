@@ -300,7 +300,7 @@ bool EngineBase::CreateRasterizerState()
     D3D11_RASTERIZER_DESC solidRastDesc;
     ZeroMemory(&solidRastDesc, sizeof(D3D11_RASTERIZER_DESC));
     solidRastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_SOLID;
-    solidRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
+    solidRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
     solidRastDesc.FrontCounterClockwise = false;
 
     if (FAILED(m_device->CreateRasterizerState(&solidRastDesc, &m_solidRasterizerState)))

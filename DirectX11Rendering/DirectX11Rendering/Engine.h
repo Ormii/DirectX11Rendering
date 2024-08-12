@@ -28,4 +28,8 @@ private:
 	vector<std::shared_ptr<Mesh>> m_meshes;
 	vector<std::shared_ptr<Light>> m_lights;
 	std::shared_ptr<Camera> m_mainCamera;
+
+private:
+	std::weak_ptr<Mesh> m_targetMesh;
+	std::weak_ptr<Light> m_targetLight;
 };

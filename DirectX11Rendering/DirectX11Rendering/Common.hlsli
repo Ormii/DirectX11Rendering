@@ -1,4 +1,4 @@
-#define MAX_LIGHTS 3 
+#define MAX_LIGHTS 12 
 #define NUM_DIR_LIGHTS 1
 #define NUM_POINT_LIGHTS 1
 #define NUM_SPOT_LIGHTS 1
@@ -17,10 +17,8 @@ struct Material
 // ����
 struct LightData
 {
-    float4 lightType;
-    float dummy1;
-    float dummy2;
-    float dummy3;
+    float lightType;
+    float3 dummy3;
 
     float3 strength;
     float fallOffStart;
@@ -100,7 +98,7 @@ float3 ComputeSpotLight(LightData L, Material mat, float3 pos, float3 normal,
         float att = CalcAttenuation(d, L.fallOffStart, L.fallOffEnd);
         lightStrength *= att;
 
-        float spotFactor = pow(max(-dot(lightVec, L.direction), 0.0f), L.spotPower);
+        float spotFactor = pow(max(-dot(lightVec, normalize(L.direction)), 0.0f), L.spotPower);
         lightStrength *= spotFactor;
 
         return BlinnPhong(lightStrength, lightVec, normal, toEye, mat);

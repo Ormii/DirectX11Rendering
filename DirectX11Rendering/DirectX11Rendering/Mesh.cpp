@@ -60,6 +60,8 @@ void Mesh::Update(float dt)
 	if (pCamera.expired())
 		return;
 
+	ZeroMemory(&m_MeshPixelConstantBufferData, sizeof(m_MeshPixelConstantBufferData));
+
 	m_MeshVertexConstantBufferData.model =
 		Matrix::CreateScale(m_modelScaling) *
 		Matrix::CreateRotationY(m_modelRotation.y) *
@@ -69,9 +71,13 @@ void Mesh::Update(float dt)
 	m_MeshVertexConstantBufferData.model =
 		m_MeshVertexConstantBufferData.model.Transpose();
 
+	m_MeshVertexConstantBufferData.invTranspose = m_MeshVertexConstantBufferData.model;
+	m_MeshVertexConstantBufferData.invTranspose.Translation(Vector3(0.0f));
+	m_MeshVertexConstantBufferData.invTranspose = m_MeshVertexConstantBufferData.invTranspose.Transpose().Invert();
+
 	m_MeshVertexConstantBufferData.view =
 		Matrix::CreateRotationY(pCamera.lock()->GetRotation().y) *
-		Matrix::CreateTranslation(pCamera.lock()->GetPosition());
+		Matrix::CreateTranslation(pCamera.lock()->GetTranslation());
 
 	m_MeshPixelConstantBufferData.eyeWorld = Vector3::Transform(
 		Vector3(0.0f), m_MeshVertexConstantBufferData.view.Invert());
@@ -92,6 +98,33 @@ void Mesh::Update(float dt)
 	}
 	m_MeshVertexConstantBufferData.projection =
 		m_MeshVertexConstantBufferData.projection.Transpose();
+
+	m_MeshPixelConstantBufferData.material = m_material;
+
+	auto& lights = pEngine->GetLights();
+
+	int pointLightIdx = 0;
+	int spotLightIdx = 0;
+	for (int i = 0; i < lights.size(); ++i)
+	{
+		switch (lights[i]->GetLightData().lightType)
+		{
+		case LightType::LightType_DirectionalLight:
+			m_MeshPixelConstantBufferData.directionalLight = lights[i]->GetLightData();
+			break;
+		case LightType::LightType_PointLight:
+			if(pointLightIdx < MAX_LIGHTS)
+				m_MeshPixelConstantBufferData.pointlights[pointLightIdx++] = lights[i]->GetLightData();
+			break;
+		case LightType::LightType_SpotLight:
+			if (spotLightIdx < MAX_LIGHTS)
+				m_MeshPixelConstantBufferData.spotlights[spotLightIdx++] = lights[i]->GetLightData();
+			break;
+		default:
+			break;
+		}
+	}
+
 
 	pEngine->UpdateBuffer(m_MeshVertexConstantBufferData, m_vertexConstantBuffer);
 	pEngine->UpdateBuffer(m_MeshPixelConstantBufferData, m_pixelConstantBuffer);
