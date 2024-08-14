@@ -25,14 +25,14 @@ bool Engine::Initialize()
 	m_mainCamera = std::make_shared<Camera>();
 	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0f);
 
-	auto floor = std::make_shared<Square>();
+	auto floor = make_shared<Model>();
+	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeSquare()});
+
 	floor->GetTranslation() = Vector3(0.0f, -5.0f, 8.0f);
 	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);
 	floor->GetRotation() = Vector3(3.14f/2, 0.0f, 0.0f);
-	floor->GetMaterial().diffuse = Vector3(1.0f, 1.0f, 1.0f);
-	floor->GetMaterial().specular = Vector3(1.0f, 1.0f, 1.0f);
 
-	m_meshes.push_back(floor);
+	m_models.push_back(floor);
 
 	LightData lightData{};
 	lightData.lightType = LightType::LightType_DirectionalLight;
@@ -60,15 +60,11 @@ bool Engine::Initialize()
 	m_lights.push_back(pointLight);
 	m_lights.push_back(spotLight);
 
-	for (auto& mesh : m_meshes)
-	{
-		mesh->Initialize();
-	}
 
-	m_targetMesh = floor;
+	m_targetModel = floor;
 	m_targetLight = spotLight;
 
-	m_commandLists.resize(2);
+	m_commandLists.resize(1);
 
 	return true;
 }
@@ -81,11 +77,9 @@ void Engine::Update(float dt)
 		light->Update(dt);
 	}
 
-	for (auto& mesh : m_meshes)
-	{
-		mesh->Update(dt);
-	}
+	g_ThreadManager->Launch(&Engine::UpdateMeshes, this, ThreadParam{ 0,  dt});
 
+	g_ThreadManager->Join();
 }
 
 void Engine::UpdateGUI()
@@ -94,17 +88,12 @@ void Engine::UpdateGUI()
 	ImGui::Checkbox("Draw Normals", &g_bUseDrawNormals);
 	ImGui::Checkbox("Use Perspective", &g_bUsePerspectiveProjection);
 
-	if (!m_targetMesh.expired())
+	if (!m_targetModel.expired())
 	{
-		std::shared_ptr<Mesh> targetMesh = m_targetMesh.lock();
-		ImGui::SliderFloat3("TargetMesh Translation", &targetMesh->GetTranslation().x, -10.0f, 10.0f);
-		ImGui::SliderFloat3("TargetMesh Rotation", &targetMesh->GetRotation().x, -3.14f, 3.14f);
-		ImGui::SliderFloat3("TargetMesh Scaling", &targetMesh->GetScaling().x, 0.1f, 10.0f);
-
-		ImGui::SliderFloat3("TargetMesh Material Ambient", &targetMesh->GetMaterial().ambient.x, 0.0f, 1.0f);
-		ImGui::SliderFloat3("TargetMesh Material Diffuse", &targetMesh->GetMaterial().diffuse.x, 0.0f, 1.0f);
-		ImGui::SliderFloat3("TargetMesh Material Specular", &targetMesh->GetMaterial().specular.x, 0.0f, 1.0f);
-		ImGui::SliderFloat("TargetMesh Material Shininess", &targetMesh->GetMaterial().shininess, 0.1f, 2.0f);
+		std::shared_ptr<Model> targetModel = m_targetModel.lock();
+		ImGui::SliderFloat3("TargetMesh Translation", &targetModel->GetTranslation().x, -10.0f, 10.0f);
+		ImGui::SliderFloat3("TargetMesh Rotation", &targetModel->GetRotation().x, -3.14f, 3.14f);
+		ImGui::SliderFloat3("TargetMesh Scaling", &targetModel->GetScaling().x, 0.1f, 10.0f);
 	}
 
 	if (!m_targetLight.expired())
@@ -127,7 +116,7 @@ void Engine::Render()
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 1; ++i)
 	{
 		ThreadParam MeshRenderThreadParam{};
 		MeshRenderThreadParam.commandListIdx = i;
@@ -144,6 +133,15 @@ void Engine::Render()
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+}
+
+void Engine::UpdateMeshes(ThreadParam param)
+{
+	for (auto& mesh : m_models)
+	{
+		mesh->Update(param.deltatime);
+		mesh->UpdateConstantBuffers(m_device, m_context);
+	}
 }
 
 void Engine::RenderMeshes(ThreadParam param)
@@ -167,9 +165,9 @@ void Engine::RenderMeshes(ThreadParam param)
 	viewport.MaxDepth = 1.0f;
 	deferredContext->RSSetViewports(1, &viewport);
 
-	for (auto& mesh : m_meshes)
+	for (auto& model : m_models)
 	{
-		mesh->Render(deferredContext);
+		model->Render(deferredContext);
 	}
 
 	ComPtr<ID3D11CommandList> commandList;

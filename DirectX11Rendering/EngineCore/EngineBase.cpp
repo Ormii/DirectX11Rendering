@@ -12,7 +12,7 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 }
 
 EngineBase::EngineBase()
-	:m_screenWidth(MAIN_WINDOW_WIDTH), m_screenHeight(MAIN_WINDOW_HEIGHT), m_hwnd(0), numQualityLevels(0), m_viewport(D3D11_VIEWPORT())
+	:m_screenWidth(MAIN_WINDOW_WIDTH), m_screenHeight(MAIN_WINDOW_HEIGHT), m_hwnd(0), m_numQualityLevels(0), m_viewport(D3D11_VIEWPORT())
 {
 	g_EngineBase = this;
 }
@@ -187,9 +187,9 @@ bool EngineBase::InitDirectX()
         return false;
     }
 
-    device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &numQualityLevels);
+    device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &m_numQualityLevels);
 
-    if (numQualityLevels <= 0) {
+    if (m_numQualityLevels <= 0) {
         return false;
     }
 
@@ -213,9 +213,9 @@ bool EngineBase::InitDirectX()
     sd.Windowed = TRUE;
     sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    if (numQualityLevels > 0) {
+    if (m_numQualityLevels > 0) {
         sd.SampleDesc.Count = 4;
-        sd.SampleDesc.Quality = numQualityLevels - 1;
+        sd.SampleDesc.Quality = m_numQualityLevels - 1;
     }
     else {
         sd.SampleDesc.Count = 1;
@@ -249,7 +249,8 @@ bool EngineBase::InitDirectX()
         return false;
 
 
-    if (!CreateDepthStencilBuffer())
+    if (!EngineUtility::CreateDepthStencilBuffer(m_device,m_context,m_depthStencilBuffer,m_depthStencilView,
+        m_depthStencilState,m_screenWidth,m_screenHeight, m_numQualityLevels))
         return false;
 
     return true;
@@ -330,130 +331,4 @@ void EngineBase::SetViewport()
     m_viewport.MinDepth = 0.0f;
     m_viewport.MaxDepth = 1.0f;
     m_context->RSSetViewports(1, &m_viewport);
-
-}
-
-bool EngineBase::CreateDepthStencilBuffer()
-{
-    D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-    depthStencilBufferDesc.Width = m_screenWidth;
-    depthStencilBufferDesc.Height = m_screenHeight;
-    depthStencilBufferDesc.MipLevels = 1;
-    depthStencilBufferDesc.ArraySize = 1;
-    depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    if (numQualityLevels > 0) {
-        depthStencilBufferDesc.SampleDesc.Count = 4;
-        depthStencilBufferDesc.SampleDesc.Quality = numQualityLevels - 1;
-    }
-    else {
-        depthStencilBufferDesc.SampleDesc.Count = 1;
-        depthStencilBufferDesc.SampleDesc.Quality = 0;
-    }
-    depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    depthStencilBufferDesc.CPUAccessFlags = 0;
-    depthStencilBufferDesc.MiscFlags = 0;
-
-    if (FAILED(m_device->CreateTexture2D(&depthStencilBufferDesc, 0,
-        m_depthStencilBuffer.GetAddressOf())))
-    {
-        return false;
-    }
-    if (FAILED(
-        m_device->CreateDepthStencilView(m_depthStencilBuffer.Get(), 0, &m_depthStencilView)))
-    {
-        return false;
-    }
-
-    D3D11_DEPTH_STENCIL_DESC depthStencilDesc;
-    ZeroMemory(&depthStencilDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-    depthStencilDesc.DepthEnable = true;
-    depthStencilDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL;
-    depthStencilDesc.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS_EQUAL;
-    if (FAILED(m_device->CreateDepthStencilState(&depthStencilDesc,
-        m_depthStencilState.GetAddressOf())))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void CheckResult(HRESULT hr, ID3DBlob* errorBlob) {
-    if (FAILED(hr)) {
-
-        if ((hr & D3D11_ERROR_FILE_NOT_FOUND) != 0) {
-            std::cout << "File not found." << std::endl;
-        }
-
-        if (errorBlob) {
-            std::cout << "Shader compile error\n"
-                << (char*)errorBlob->GetBufferPointer() << std::endl;
-        }
-    }
-}
-
-
-void EngineBase::CreateVertexShaderAndInputLayout(const wstring& filename, const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
-{
-    ComPtr<ID3DBlob> shaderBlob;
-    ComPtr<ID3DBlob> errorBlob;
-
-    UINT compileFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
-    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-    
-    HRESULT hr = D3DCompileFromFile(
-        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
-        "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
-
-    CheckResult(hr, errorBlob.Get());
-
-    m_device->CreateVertexShader(shaderBlob->GetBufferPointer(),
-        shaderBlob->GetBufferSize(), NULL,
-        &vertexShader);
-
-    m_device->CreateInputLayout(inputElements.data(),
-        UINT(inputElements.size()),
-        shaderBlob->GetBufferPointer(),
-        shaderBlob->GetBufferSize(), &inputLayout);
-}
-
-void EngineBase::CreatePixelShader(const wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
-{
-    ComPtr<ID3DBlob> shaderBlob;
-    ComPtr<ID3DBlob> errorBlob;
-
-
-    UINT compileFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
-    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-    HRESULT hr = D3DCompileFromFile(
-        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
-        "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
-
-    CheckResult(hr, errorBlob.Get());
-
-    m_device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
-}
-
-void EngineBase::CreateIndexBuffer(const vector<uint16_t>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer)
-{
-    D3D11_BUFFER_DESC bufferDesc = {};
-    bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    bufferDesc.ByteWidth = UINT(sizeof(uint16_t) * indices.size());
-    bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    bufferDesc.CPUAccessFlags = 0;
-    bufferDesc.StructureByteStride = sizeof(uint16_t);
-
-    D3D11_SUBRESOURCE_DATA indexBufferData = { 0, };
-    indexBufferData.pSysMem = indices.data();
-    indexBufferData.SysMemPitch = 0;
-    indexBufferData.SysMemSlicePitch = 0;
-    
-    m_device->CreateBuffer(&bufferDesc, &indexBufferData, &m_indexBuffer);
 }

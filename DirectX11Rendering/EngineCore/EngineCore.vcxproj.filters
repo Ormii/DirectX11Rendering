@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Main">
       <UniqueIdentifier>{829cb945-213e-4a90-9dd3-f05fcfd0f0d1}</UniqueIdentifier>
     </Filter>
@@ -13,6 +9,15 @@
     </Filter>
     <Filter Include="Thread">
       <UniqueIdentifier>{dd0c9443-7ea2-4fcc-9e34-e88350acac4b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{db01e939-b2ce-4810-a233-9f9e8ac7ffa6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{4f02d2ba-8c8f-4928-acb9-ee7b6c98fae8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Mesh">
+      <UniqueIdentifier>{f7f184f8-99b1-4c52-a477-e0af06106500}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,6 +42,18 @@
     <ClInclude Include="ThreadInfo.h">
       <Filter>Thread</Filter>
     </ClInclude>
+    <ClInclude Include="EngineUtility.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshData.h">
+      <Filter>Model\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>Model\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Model</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -50,6 +67,15 @@
     </ClCompile>
     <ClCompile Include="ThreadInfo.cpp">
       <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="EngineUtility.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>Model\Mesh</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Model</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

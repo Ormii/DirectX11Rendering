@@ -3,6 +3,6 @@
 
 void Light::Update(float dt)
 {
-	m_lightData.position = m_modelTranslation;
+	m_lightData.position = m_translation;
 	m_lightData.direction = m_direction;
 }

@@ -9,7 +9,8 @@
 #include "Light.h"
 #include "Camera.h"
 #include "Mesh.h"
-#include "Square.h"
+#include "Model.h"
+
 
 #include "Engine.h"
 

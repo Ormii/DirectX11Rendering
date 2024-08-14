@@ -10,12 +10,6 @@
     <Filter Include="Object">
       <UniqueIdentifier>{a679a588-e6bf-4498-90bd-e2439aa53b6b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Object\Mesh">
-      <UniqueIdentifier>{b6c0d2e0-4bb1-4191-b29c-9c4131aa37aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Object\Mesh\Prob">
-      <UniqueIdentifier>{09c29bbf-9da8-49df-8e9d-136a3198e68f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Object\Camera">
       <UniqueIdentifier>{45f69cef-18ad-4c0f-b52c-6e0cc55b3ae7}</UniqueIdentifier>
     </Filter>
@@ -31,6 +25,12 @@
     <Filter Include="Material">
       <UniqueIdentifier>{d74c68a1-c40b-4f6f-bf21-5d79b520ccec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\Model">
+      <UniqueIdentifier>{b6c0d2e0-4bb1-4191-b29c-9c4131aa37aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\Model\Mesh">
+      <UniqueIdentifier>{09c29bbf-9da8-49df-8e9d-136a3198e68f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,23 +45,14 @@
     <ClCompile Include="Object.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Object\Mesh</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Material</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Object\Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Square.cpp">
-      <Filter>Object\Mesh\Prob</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>Object\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="MeshGenerator.cpp">
-      <Filter>Object\Mesh</Filter>
+    <ClCompile Include="Model.cpp">
+      <Filter>Object\Model</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -74,9 +65,6 @@
     <ClInclude Include="Object.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Object\Mesh</Filter>
-    </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Material</Filter>
     </ClInclude>
@@ -86,18 +74,18 @@
     <ClInclude Include="Camera.h">
       <Filter>Object\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Square.h">
-      <Filter>Object\Mesh\Prob</Filter>
+    <ClInclude Include="Model.h">
+      <Filter>Object\Model</Filter>
     </ClInclude>
-    <ClInclude Include="MeshGenerator.h">
-      <Filter>Object\Mesh</Filter>
+    <ClInclude Include="Mesh.h">
+      <Filter>Object\Model\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="MeshPixelShader.hlsl">
+    <FxCompile Include="ModelPixelShader.hlsl">
       <Filter>Shader\Mesh</Filter>
     </FxCompile>
-    <FxCompile Include="MeshVertexShader.hlsl">
+    <FxCompile Include="ModelVertexShader.hlsl">
       <Filter>Shader\Mesh</Filter>
     </FxCompile>
   </ItemGroup>

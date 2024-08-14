@@ -1,4 +1,8 @@
 #pragma once
+#include <SimpleMath.h>
+
+using namespace DirectX;
+using namespace DirectX::SimpleMath;
 
 using BYTE = unsigned char;
 using int8 = __int8;
@@ -9,3 +13,11 @@ using uint8 = unsigned __int8;
 using uint16 = unsigned __int16;
 using uint32 = unsigned __int32;
 using uint64 = unsigned __int64;
+
+
+struct Vertex 
+{
+    Vector3 position;
+    Vector3 normal;
+    Vector2 texcoord;
+};

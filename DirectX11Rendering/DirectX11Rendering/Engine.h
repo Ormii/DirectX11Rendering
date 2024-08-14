@@ -23,6 +23,8 @@ public:
 private:
 	vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
+	void UpdateMeshes(ThreadParam param);
+
 	void RenderMeshes(ThreadParam param);
 
 	mutex m_lock;
@@ -32,13 +34,14 @@ public:
 	vector<std::shared_ptr<Light>>& GetLights() { return m_lights; }
 
 private:
-	vector<std::shared_ptr<Mesh>> m_meshes;
+	vector<std::shared_ptr<Model>> m_models;
 	vector<std::shared_ptr<Light>> m_lights;
 	std::shared_ptr<Camera> m_mainCamera;
 
 private:
-	std::weak_ptr<Mesh> m_targetMesh;
+	std::weak_ptr<Model> m_targetModel;
 	std::weak_ptr<Light> m_targetLight;
+
 };
 
 extern ThreadManager<Engine>* g_ThreadManager;
