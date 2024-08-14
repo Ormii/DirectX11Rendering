@@ -40,8 +40,8 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	vector<D3D11_INPUT_ELEMENT_DESC> inputElements =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"NORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"TEXCOORD",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"NORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,4*3,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,4*3+4*3,D3D11_INPUT_PER_VERTEX_DATA,0},
 	};
 
 	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"ModelVertexShader.hlsl", inputElements, m_modelVertexShader, m_modelInputLayout);

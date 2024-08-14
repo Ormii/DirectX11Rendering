@@ -149,7 +149,7 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const std::string
         image[4 * i + 3] = 255;
     }
 
-    D3D11_TEXTURE2D_DESC textureDesc;
+    D3D11_TEXTURE2D_DESC textureDesc{};
     textureDesc.Width = width;
     textureDesc.Height = height;
     textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -160,7 +160,7 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const std::string
 
     D3D11_SUBRESOURCE_DATA initData{};
     initData.pSysMem = image.data();
-    initData.SysMemPitch = textureDesc.Width * sizeof(uint8_t);
+    initData.SysMemPitch = textureDesc.Width * sizeof(uint8_t) * 4;
 
     device->CreateTexture2D(&textureDesc, &initData, texture.GetAddressOf());
     device->CreateShaderResourceView(texture.Get(), nullptr, textureResourceView.GetAddressOf());

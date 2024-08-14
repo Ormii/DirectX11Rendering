@@ -25,6 +25,12 @@ bool Engine::Initialize()
 	m_mainCamera = std::make_shared<Camera>();
 	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0);
 
+	auto zelda = make_shared<Model>();
+	zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
+	zelda->GetTranslation() = Vector3(0.0f, 0.0f, -3.5f);
+	zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
+	m_models.push_back(zelda);
+
 	auto floor = make_shared<Model>();
 	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
 	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
@@ -36,7 +42,7 @@ bool Engine::Initialize()
 	m_directionalLight = std::make_shared<Light>(lightData);
 	m_directionalLight->GetDirection() = Vector3(-1.0f, -1.0f, -1.0);
 	m_directionalLight->GetDirection().Normalize();
-	m_directionalLight->GetLightData().strength = Vector3(0.05f);
+	m_directionalLight->GetLightData().strength = Vector3(0.5f);
 
 	for (int32 i = 0; i < MAX_LIGHTS; ++i)
 	{
@@ -61,7 +67,7 @@ bool Engine::Initialize()
 	m_spotLights[0]->GetLightData().fallOffStart = 3.0f;
 	m_spotLights[0]->GetLightData().fallOffEnd = 8.0f;
 
-	m_targetModel = floor;
+	m_targetModel = zelda;
 	m_targetLight = m_spotLights[0];
 
 	m_commandLists.resize(1);
