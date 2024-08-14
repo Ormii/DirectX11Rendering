@@ -17,9 +17,6 @@ struct Material
 // ����
 struct LightData
 {
-    float lightType;
-    float3 dummy3;
-
     float3 strength;
     float fallOffStart;
     float3 direction;
@@ -35,7 +32,7 @@ float3 BlinnPhong(float3 lightStrength, float3 lightVec, float3 normal,
     float hdotn = dot(halfway, normal);
     float3 specular = mat.specular * pow(max(hdotn, 0.0f), mat.shininess);
 
-    return mat.ambient + (mat.diffuse + specular) * lightStrength;
+    return (mat.ambient + mat.diffuse + specular) * lightStrength;
 }
 
 float3 ComputeDirectionalLight(LightData L, Material mat, float3 normal,

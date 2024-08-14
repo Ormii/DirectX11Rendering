@@ -2,7 +2,7 @@
 #include "Engine.h"
 
 bool g_bUsePerspectiveProjection = true;
-bool g_bUseDrawNormals = true;
+bool g_bUseDrawNormals = false;
 bool g_bUseDrawWireFrame = false;
 
 ThreadManager<Engine>* g_ThreadManager = nullptr;
@@ -23,46 +23,46 @@ bool Engine::Initialize()
 		return false;
 
 	m_mainCamera = std::make_shared<Camera>();
-	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0f);
+	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0);
 
 	auto floor = make_shared<Model>();
-	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeSquare()});
-
-	floor->GetTranslation() = Vector3(0.0f, -5.0f, 8.0f);
+	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
+	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
+	floor->GetRotation() = Vector3(3.14f / 2, 0.0f, 0.0f);
 	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);
-	floor->GetRotation() = Vector3(3.14f/2, 0.0f, 0.0f);
-
 	m_models.push_back(floor);
 
 	LightData lightData{};
-	lightData.lightType = LightType::LightType_DirectionalLight;
-	auto directionalLight = std::make_shared<Light>(lightData);
+	m_directionalLight = std::make_shared<Light>(lightData);
+	m_directionalLight->GetDirection() = Vector3(-1.0f, -1.0f, -1.0);
+	m_directionalLight->GetDirection().Normalize();
+	m_directionalLight->GetLightData().strength = Vector3(0.05f);
 
-	LightData pointLightData{};
-	pointLightData.lightType = LightType::LightType_PointLight;
-	auto pointLight = std::make_shared<Light>(pointLightData);
-	pointLight->GetTranslation() = Vector3(0.0f, 0.0f, 7.25f);
-	pointLight->GetLightData().fallOffStart = 3.5f;
-	pointLight->GetLightData().fallOffEnd = 8.5f;
+	for (int32 i = 0; i < MAX_LIGHTS; ++i)
+	{
+		LightData pointLightData{};
+		m_pointLights.push_back(std::make_shared<Light>(pointLightData));
+	}
 
-	LightData spotLightData{};
-	spotLightData.lightType = LightType::LightType_SpotLight;
-	auto spotLight = std::make_shared<Light>(spotLightData);
-	spotLight->GetLightData().fallOffStart = 3.2f;
-	spotLight->GetLightData().fallOffEnd = 8.5f;
-	spotLight->GetLightData().spotPower = 9.0f;
-	spotLight->GetTranslation() = Vector3(7.3f, 1.75f, 4.4f);
-	spotLight->GetDirection() = Vector3(-0.3f, -1.0f, 0.0f);
-	spotLight->GetDirection().Normalize();
+	for (int32 i = 0; i < MAX_LIGHTS; ++i)
+	{
+		LightData spotLightData{};
+		m_spotLights.push_back(std::make_shared<Light>(spotLightData));
+	}
 
+	m_pointLights[0]->GetLightData().strength = Vector3(1.0f);
+	m_pointLights[0]->GetTranslation() = Vector3(0.0f, 3.5f, 0.0f);
+	m_pointLights[0]->GetLightData().fallOffStart = 3.0f;
+	m_pointLights[0]->GetLightData().fallOffEnd = 8.0f;
 
-	m_lights.push_back(directionalLight);
-	m_lights.push_back(pointLight);
-	m_lights.push_back(spotLight);
-
+	m_spotLights[0]->GetLightData().strength = Vector3(1.0f);
+	m_spotLights[0]->GetTranslation() = Vector3(0.0f, 3.5f, 0.0f);
+	m_spotLights[0]->GetDirection() = Vector3(0.0f, -1.0f, 0.0f);
+	m_spotLights[0]->GetLightData().fallOffStart = 3.0f;
+	m_spotLights[0]->GetLightData().fallOffEnd = 8.0f;
 
 	m_targetModel = floor;
-	m_targetLight = spotLight;
+	m_targetLight = m_spotLights[0];
 
 	m_commandLists.resize(1);
 
@@ -72,7 +72,15 @@ bool Engine::Initialize()
 void Engine::Update(float dt)
 {
 	m_mainCamera->Update(dt);
-	for (auto& light : m_lights)
+
+	m_directionalLight->Update(dt);
+
+	for (auto& light : m_pointLights)
+	{
+		light->Update(dt);
+	}
+
+	for (auto& light : m_spotLights)
 	{
 		light->Update(dt);
 	}

@@ -88,6 +88,12 @@
     <FxCompile Include="ModelVertexShader.hlsl">
       <Filter>Shader\Mesh</Filter>
     </FxCompile>
+    <FxCompile Include="NormalVertexShader.hlsl">
+      <Filter>Shader\Mesh</Filter>
+    </FxCompile>
+    <FxCompile Include="NormalPixelShader.hlsl">
+      <Filter>Shader\Mesh</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Common.hlsli">

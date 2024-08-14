@@ -14,7 +14,7 @@ public:
 
 protected:
 	Vector3 m_translation = Vector3(0.0f);
-	Vector3 m_rotation = Vector3(0, 0.0f, 0.0f);
+	Vector3 m_rotation = Vector3(0.0f, 0.0f, 0.0f);
 	Vector3 m_scaling = Vector3(1.0f);
 	Vector3 m_direction = Vector3(0.0f);
 };

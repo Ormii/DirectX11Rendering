@@ -19,8 +19,11 @@ float4 main(PixelShaderInput input) : SV_TARGET
     
     color += ComputeDirectionalLight(directionalLight, material, input.normalWorld, toEye);
     
+    [loop]
     for (i = 0; i < MAX_LIGHTS; ++i)
         color += ComputePointLight(pointlight[i], material, input.posWorld, input.normalWorld, toEye);
+    
+    [loop]
     for (i = 0; i < MAX_LIGHTS; ++i)
         color += ComputeSpotLight(spotlight[i], material, input.posWorld, input.normalWorld, toEye);
     

@@ -46,6 +46,44 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"ModelVertexShader.hlsl", inputElements, m_modelVertexShader, m_modelInputLayout);
 	EngineUtility::CreatePixelShader(device, context, L"ModelPixelShader.hlsl", m_modelPixelShader);
+
+	m_normalLines = std::make_shared<Mesh>();
+
+	std::vector<Vertex> normalVertices;
+	std::vector<uint32_t> normalIndices;
+
+	size_t offset = 0;
+	for (const auto& meshData : meshes) {
+		for (size_t i = 0; i < meshData.vertices.size(); i++) {
+
+			auto v = meshData.vertices[i];
+
+			v.texcoord.x = 0.0f;
+			normalVertices.push_back(v);
+
+			v.texcoord.x = 1.0f;
+			normalVertices.push_back(v);
+
+			normalIndices.push_back(uint32_t(2 * (i + offset)));
+			normalIndices.push_back(uint32_t(2 * (i + offset) + 1));
+		}
+		offset += meshData.vertices.size();
+	}
+
+	EngineUtility::CreateVertexBuffer(device, context, normalVertices,
+		m_normalLines->vertexBuffer);
+	m_normalLines->m_indexCount = UINT(normalIndices.size());
+	EngineUtility::CreateIndexBuffer(device, context, normalIndices,
+		m_normalLines->indexBuffer);
+
+	EngineUtility::CreateVertexShaderAndInputLayout(
+		device, context, L"NormalVertexShader.hlsl", inputElements,
+		m_normalVertexShader, m_modelInputLayout);
+	EngineUtility::CreatePixelShader(device, context, L"NormalPixelShader.hlsl",
+		m_normalPixelShader);
+
+	EngineUtility::CreateConstantBuffer(device, context, m_normalVertexConstantData,
+		m_normalVertexConstantBuffer);
 }
 
 void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
@@ -56,69 +94,56 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 
 	for (const auto& mesh : m_meshes)
 	{
-		m_modelVertexConstantData.model = Matrix::CreateScale(GetScaling())
-			* Matrix::CreateRotationX(GetRotation().x)
+		auto modelRow = Matrix::CreateScale(GetScaling())
 			* Matrix::CreateRotationY(GetRotation().y)
+			* Matrix::CreateRotationX(GetRotation().x)
 			* Matrix::CreateRotationZ(GetRotation().z)
 			* Matrix::CreateTranslation(GetTranslation());
 
-		m_modelVertexConstantData.invTranspose = m_modelVertexConstantData.model;
-		m_modelVertexConstantData.invTranspose.Translation(Vector3(0.0));
-		m_modelVertexConstantData.invTranspose = m_modelVertexConstantData.invTranspose.Invert().Transpose();
+		auto invTransposeRow = modelRow.Transpose();
+		invTransposeRow.Translation(Vector3(0.0f));
+		invTransposeRow = invTransposeRow.Transpose().Invert();
 
-		m_modelVertexConstantData.model = m_modelVertexConstantData.model.Transpose();
-
-		m_modelVertexConstantData.view = Matrix::CreateRotationX(pEngine->GetMainCamera()->GetRotation().x)
-			* Matrix::CreateRotationY(pEngine->GetMainCamera()->GetRotation().y)
-			* Matrix::CreateTranslation(pEngine->GetMainCamera()->GetTranslation());
-
-		m_modelVertexConstantData.view = m_modelVertexConstantData.view.Transpose();
+		auto viewRow = Matrix::CreateRotationY(pEngine->GetMainCamera()->GetRotation().y) *
+			Matrix::CreateRotationX(pEngine->GetMainCamera()->GetRotation().x) *
+			Matrix::CreateTranslation(pEngine->GetMainCamera()->GetTranslation());
 
 		const float aspect = pEngine->GetAspectRatio();
-		Matrix projMat = Matrix();
+		Matrix projRow = Matrix();
 		float nearZ = pEngine->GetMainCamera()->GetNearZ(), farZ = pEngine->GetMainCamera()->GetFarZ();
 
 		if (g_bUsePerspectiveProjection)
-			projMat = XMMatrixPerspectiveFovLH(XMConvertToRadians(pEngine->GetMainCamera()->GetFovAngle()), aspect,
+			projRow = XMMatrixPerspectiveFovLH(XMConvertToRadians(pEngine->GetMainCamera()->GetFovAngle()), aspect,
 				nearZ, farZ);
 		else
-			projMat = XMMatrixOrthographicOffCenterLH(-aspect, aspect, -1.0f, 1.0f, nearZ, farZ);
+			projRow = XMMatrixOrthographicOffCenterLH(-aspect, aspect, -1.0f, 1.0f, nearZ, farZ);
 		
-		m_modelVertexConstantData.projection = projMat.Transpose();
+		auto eyeWorld = Vector3::Transform(Vector3(0.0f), viewRow.Invert());
 
-		int32 pointLightIdx = 0, spotLightIdx = 0;
-
-
-		m_modelPixelConstantData.eyeWorld = Vector3::Transform(Vector3(0.0f), m_modelVertexConstantData.view);
-
-		for (int i = 0; i < MAX_LIGHTS && i < pEngine->GetLights().size(); ++i)
+		m_modelPixelConstantData.directionalLight = pEngine->GetDirectionalLight()->GetLightData();
+		for (int i = 0; i < MAX_LIGHTS; ++i)
 		{
-			weak_ptr<Light> pWeakLight = pEngine->GetLights()[i];
-			if (pWeakLight.expired())
-				continue;
-
-			shared_ptr<Light> pLight = pWeakLight.lock();
-
-			switch (pLight->GetLightData().lightType)
-			{
-				case LightType::LightType_DirectionalLight:
-					m_modelPixelConstantData.directionalLight = pLight->GetLightData();
-					break;
-				case LightType::LightType_PointLight:
-					m_modelPixelConstantData.pointlight[pointLightIdx++] = pLight->GetLightData();
-					break;
-				case LightType::LightType_SpotLight:
-					m_modelPixelConstantData.pointlight[spotLightIdx++] = pLight->GetLightData();
-					break;
-				default:
-					break;
-			}
+			m_modelPixelConstantData.pointlight[i] = pEngine->GetPointLights()[i]->GetLightData();
+			m_modelPixelConstantData.spotlight[i] = pEngine->GetSpotLights()[i]->GetLightData();
 		}
 
+		m_modelVertexConstantData.model = modelRow.Transpose();
+		m_modelVertexConstantData.view = viewRow.Transpose();
+		m_modelVertexConstantData.invTranspose = invTransposeRow;
+		m_modelVertexConstantData.projection = projRow.Transpose();
+
+		m_modelPixelConstantData.eyeWorld = eyeWorld;
 		m_modelPixelConstantData.material = mesh->mat;
 		
 		EngineUtility::UpdateBuffer(device, context, m_modelVertexConstantData, mesh->vertexConstantBuffer);
 		EngineUtility::UpdateBuffer(device, context, m_modelPixelConstantData, mesh->pixelConstantBuffer);
+	}
+
+	if (g_bUseDrawNormals)
+	{
+		m_normalVertexConstantData.scale = 1.0f;
+		EngineUtility::UpdateBuffer(device, context, m_normalVertexConstantData,
+			m_normalVertexConstantBuffer);
 	}
 }
 
@@ -131,6 +156,11 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);
 	context->PSSetSamplers(0, 0, m_modelDefaultSamplerState.GetAddressOf());
 	context->PSSetShader(m_modelPixelShader.Get(), 0, 0);
+
+	if (g_bUseDrawWireFrame)
+		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+	else
+		context->RSSetState(pEngine->GetSolidRasterizerState().Get());
 
 	UINT stride = sizeof(Vertex), offset = 0;
 	for (auto& mesh : m_meshes)
@@ -151,6 +181,22 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->PSSetShaderResources(0, 3, resViews);
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		context->DrawIndexed(mesh->m_indexCount, 0, 0);
+	}
+
+	if (g_bUseDrawNormals)
+	{
+		context->VSSetShader(m_normalVertexShader.Get(), 0, 0);
+		ID3D11Buffer* pptr[2] = { m_modelvertexConstantBuffer.Get(),
+								 m_normalVertexConstantBuffer.Get() };
+		context->VSSetConstantBuffers(0, 2, pptr);
+		context->PSSetShader(m_normalPixelShader.Get(), 0, 0);
+		context->IASetInputLayout(m_modelInputLayout.Get());
+		context->IASetVertexBuffers(
+			0, 1, m_normalLines->vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetIndexBuffer(m_normalLines->indexBuffer.Get(),
+			DXGI_FORMAT_R32_UINT, 0);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		context->DrawIndexed(m_normalLines->m_indexCount, 0, 0);
 	}
 }
 

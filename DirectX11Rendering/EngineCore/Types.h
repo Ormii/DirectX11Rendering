@@ -21,3 +21,9 @@ struct Vertex
     Vector3 normal;
     Vector2 texcoord;
 };
+
+struct NormalVertexConstantData 
+{
+    float scale = 0.1f;
+    float dummy[3];
+};

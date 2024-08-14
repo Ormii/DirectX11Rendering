@@ -31,11 +31,15 @@ private:
 public:
 	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }
 
-	vector<std::shared_ptr<Light>>& GetLights() { return m_lights; }
-
+	shared_ptr<Light>& GetDirectionalLight(){ return m_directionalLight; }
+	vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
+	vector<std::shared_ptr<Light>>& GetSpotLights() { return m_spotLights; }
 private:
 	vector<std::shared_ptr<Model>> m_models;
-	vector<std::shared_ptr<Light>> m_lights;
+
+	shared_ptr<Light> m_directionalLight;
+	vector<std::shared_ptr<Light>> m_pointLights;
+	vector<std::shared_ptr<Light>> m_spotLights;
 	std::shared_ptr<Camera> m_mainCamera;
 
 private:

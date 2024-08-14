@@ -1,5 +1,6 @@
 #pragma once
 
+
 struct ModelVertexConstantData {
     Matrix model;
     Matrix invTranspose;
@@ -48,12 +49,24 @@ protected:
 private:
     std::vector<shared_ptr<Mesh>> m_meshes;
 
+
     ComPtr<ID3D11VertexShader> m_modelVertexShader;
     ComPtr<ID3D11PixelShader> m_modelPixelShader;
     ComPtr<ID3D11InputLayout> m_modelInputLayout;
 
     ComPtr<ID3D11Buffer> m_modelvertexConstantBuffer;
     ComPtr<ID3D11Buffer> m_modelpixelConstantBuffer;
+
+private:
+
+    ComPtr<ID3D11VertexShader> m_normalVertexShader;
+    ComPtr<ID3D11PixelShader> m_normalPixelShader;
+
+    shared_ptr<Mesh> m_normalLines;
+
+    NormalVertexConstantData m_normalVertexConstantData;
+    ComPtr<ID3D11Buffer> m_normalVertexConstantBuffer;
+    ComPtr<ID3D11Buffer> m_normalPixelConstantBuffer;
 
 private:
     ComPtr<ID3D11SamplerState> m_modelDefaultSamplerState;
