@@ -32,7 +32,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 		newmesh->vertexConstantBuffer = m_modelvertexConstantBuffer;
 		newmesh->pixelConstantBuffer = m_modelpixelConstantBuffer;
-		newmesh->m_indexCount = meshData.indices.size();
+		newmesh->m_indexCount = static_cast<UINT>(meshData.indices.size());
 
 		this->m_meshes.push_back(newmesh);
 	}
@@ -112,10 +112,9 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		float nearZ = pEngine->GetMainCamera()->GetNearZ(), farZ = pEngine->GetMainCamera()->GetFarZ();
 
 		if (g_bUsePerspectiveProjection)
-			projRow = XMMatrixPerspectiveFovLH(XMConvertToRadians(pEngine->GetMainCamera()->GetFovAngle()), aspect,
-				nearZ, farZ);
+			projRow = pEngine->GetMainCamera()->GetPersMat();
 		else
-			projRow = XMMatrixOrthographicOffCenterLH(-aspect, aspect, -1.0f, 1.0f, nearZ, farZ);
+			projRow = pEngine->GetMainCamera()->GetOrthMat();
 		
 		auto eyeWorld = Vector3::Transform(Vector3(0.0f), viewRow.Invert());
 

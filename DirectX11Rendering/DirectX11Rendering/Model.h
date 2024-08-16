@@ -35,6 +35,9 @@ public:
 public:
     virtual void Update(float dt) override;
 
+    void SetDiffuseResView(ComPtr<ID3D11ShaderResourceView> diffuseResView) { m_diffuseResView = diffuseResView; }
+    void SetSpecularResView(ComPtr<ID3D11ShaderResourceView> specularResView) { m_specularResView = specularResView; }
+
 protected:
     virtual void CreateSamplerState(ComPtr<ID3D11Device>& device);
 

@@ -27,8 +27,10 @@ private:
 	vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
 	void UpdateMeshes(ThreadParam param);
+	void UpdateCubeMap(ThreadParam param);
 
 	void RenderMeshes(ThreadParam param);
+	void RenderCubMap(ThreadParam param);
 
 	mutex m_lock;
 public:
@@ -38,12 +40,16 @@ public:
 	vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
 	vector<std::shared_ptr<Light>>& GetSpotLights() { return m_spotLights; }
 private:
+
+
 	vector<std::shared_ptr<Model>> m_models;
 
 	shared_ptr<Light> m_directionalLight;
 	vector<std::shared_ptr<Light>> m_pointLights;
 	vector<std::shared_ptr<Light>> m_spotLights;
+	
 	std::shared_ptr<Camera> m_mainCamera;
+	std::shared_ptr<CubeMap> m_cubeMap;
 
 private:
 	std::weak_ptr<Model> m_targetModel;

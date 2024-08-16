@@ -31,6 +31,12 @@
     <Filter Include="Object\Model\Mesh">
       <UniqueIdentifier>{09c29bbf-9da8-49df-8e9d-136a3198e68f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CubeMap">
+      <UniqueIdentifier>{42de11a4-0b68-4932-b4d8-733c09767d69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\CubeMap">
+      <UniqueIdentifier>{034c4306-5507-4763-974d-0707d6581a1d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,6 +59,9 @@
     </ClCompile>
     <ClCompile Include="Model.cpp">
       <Filter>Object\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="CubeMap.cpp">
+      <Filter>CubeMap</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +89,9 @@
     <ClInclude Include="Mesh.h">
       <Filter>Object\Model\Mesh</Filter>
     </ClInclude>
+    <ClInclude Include="CubeMap.h">
+      <Filter>CubeMap</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ModelPixelShader.hlsl">
@@ -93,6 +105,12 @@
     </FxCompile>
     <FxCompile Include="NormalPixelShader.hlsl">
       <Filter>Shader\Mesh</Filter>
+    </FxCompile>
+    <FxCompile Include="CubeMapVertexShader.hlsl">
+      <Filter>Shader\CubeMap</Filter>
+    </FxCompile>
+    <FxCompile Include="CubeMapPixelShader.hlsl">
+      <Filter>Shader\CubeMap</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

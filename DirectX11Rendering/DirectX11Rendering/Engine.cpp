@@ -25,10 +25,15 @@ bool Engine::Initialize()
 	m_mainCamera = std::make_shared<Camera>();
 	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0);
 
+	m_cubeMap = make_shared<CubeMap>();
+	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
+
 	auto zelda = make_shared<Model>();
 	zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
 	zelda->GetTranslation() = Vector3(0.0f, 0.0f, -3.5f);
 	zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
+	zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+	zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
 	m_models.push_back(zelda);
 
 	auto floor = make_shared<Model>();
@@ -36,6 +41,8 @@ bool Engine::Initialize()
 	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
 	floor->GetRotation() = Vector3(3.14f / 2, 0.0f, 0.0f);
 	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);
+	floor->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+	floor->SetSpecularResView(m_cubeMap->GetSpecularResView());
 	m_models.push_back(floor);
 
 	LightData lightData{};
@@ -69,8 +76,6 @@ bool Engine::Initialize()
 
 	m_targetModel = zelda;
 	m_targetLight = m_spotLights[0];
-
-	m_commandLists.resize(1);
 
 	return true;
 }
@@ -111,6 +116,7 @@ void Engine::Update(float dt)
 	}
 
 	g_ThreadManager->Launch(&Engine::UpdateMeshes, this, ThreadParam{ 0,  dt});
+	g_ThreadManager->Launch(&Engine::UpdateCubeMap, this, ThreadParam{ 1, dt });
 
 	g_ThreadManager->Join();
 }
@@ -149,19 +155,30 @@ void Engine::Render()
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	for (int i = 0; i < 1; ++i)
+	m_commandLists.resize(2);
+
 	{
 		ThreadParam MeshRenderThreadParam{};
-		MeshRenderThreadParam.commandListIdx = i;
+		MeshRenderThreadParam.commandListIdx = 0;
 
 		g_ThreadManager->Launch(&Engine::RenderMeshes, this, MeshRenderThreadParam);
+	}
+
+	{
+		ThreadParam CubeMapRenderThreadParam{};
+		CubeMapRenderThreadParam.commandListIdx = 1;
+		g_ThreadManager->Launch(&Engine::RenderCubMap, this, CubeMapRenderThreadParam);
 	}
 
 	g_ThreadManager->Join();
 
 	for (auto& commandList : m_commandLists) {
+		if (commandList == nullptr)
+			continue;
 		m_context->ExecuteCommandList(commandList.Get(), FALSE);
 	}
+
+	m_commandLists.clear();
 
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
@@ -191,6 +208,11 @@ void Engine::UpdateMeshes(ThreadParam param)
 	}
 }
 
+void Engine::UpdateCubeMap(ThreadParam param)
+{
+	m_cubeMap->Update(m_device, m_context, param.deltatime);
+}
+
 void Engine::RenderMeshes(ThreadParam param)
 {
 	ComPtr<ID3D11DeviceContext> deferredContext;
@@ -216,6 +238,38 @@ void Engine::RenderMeshes(ThreadParam param)
 	{
 		model->Render(deferredContext);
 	}
+
+	ComPtr<ID3D11CommandList> commandList;
+	deferredContext->FinishCommandList(FALSE, &commandList);
+
+	m_lock.lock();
+	m_commandLists[param.commandListIdx] = commandList;
+	m_lock.unlock();
+}
+
+void Engine::RenderCubMap(ThreadParam param)
+{
+	ComPtr<ID3D11DeviceContext> deferredContext;
+
+	m_lock.lock();
+	m_device->CreateDeferredContext(0, &deferredContext);
+	m_lock.unlock();
+
+
+	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
+		m_depthStencilView.Get());
+	deferredContext->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
+	D3D11_VIEWPORT viewport = {};
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = static_cast<float>(m_screenWidth);  // 뷰포트의 너비
+	viewport.Height = static_cast<float>(m_screenHeight); // 뷰포트의 높이
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	deferredContext->RSSetViewports(1, &viewport);
+
+	m_cubeMap->Render(m_device, deferredContext);
 
 	ComPtr<ID3D11CommandList> commandList;
 	deferredContext->FinishCommandList(FALSE, &commandList);

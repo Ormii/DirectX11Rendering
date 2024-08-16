@@ -24,7 +24,14 @@ public:
     float& GetNearZ() { return m_nearZ; }
     float& GetFarZ() { return m_farZ; }
 
+public:
+    Matrix GetViewMat();
+    Matrix GetPersMat();
+    Matrix GetOrthMat();
+
 private:
+    float m_aspect = 0.0f;
+
 
     float m_projFovAngleY = 70.0f;
     float m_nearZ = 0.01f;

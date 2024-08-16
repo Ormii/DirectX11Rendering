@@ -6,6 +6,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+
+mutex EngineUtility::lock;
+
 bool EngineUtility::CreateDepthStencilBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context,
     ComPtr<ID3D11Texture2D>& depthStencilBuffer, ComPtr<ID3D11DepthStencilView>& depthStencilView,
     ComPtr<ID3D11DepthStencilState>& depthStencilState, int32 screenWidth, int32 screenHeight, UINT numQualityLevels)

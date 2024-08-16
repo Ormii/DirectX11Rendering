@@ -1,4 +1,5 @@
 #pragma once
+
 class EngineUtility
 {
 public:
@@ -21,7 +22,7 @@ public:
 		D3D11_BUFFER_DESC bufferDesc;
 		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 		bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
-		bufferDesc.ByteWidth = sizeof(T_VERTEX) * vertices.size();
+		bufferDesc.ByteWidth = sizeof(T_VERTEX) * (UINT)vertices.size();
 		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bufferDesc.MiscFlags = 0;
 		bufferDesc.CPUAccessFlags = 0;
@@ -55,12 +56,13 @@ public:
 	}
 
 	template <typename T_DATA>
-	static void UpdateBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const T_DATA& bufferData, ComPtr<ID3D11Buffer>& buffer) {
+	static void UpdateBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const T_DATA& bufferData, ComPtr<ID3D11Buffer>& buffer) 
+	{
+		lock_guard<mutex> guard(lock);
 		D3D11_MAPPED_SUBRESOURCE ms;
 		context->Map(buffer.Get(), NULL, D3D11_MAP_WRITE_DISCARD, NULL, &ms);
 		memcpy(ms.pData, &bufferData, sizeof(bufferData));
 		context->Unmap(buffer.Get(), NULL);
-
 	}
 
 	static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string filename,
@@ -71,5 +73,7 @@ public:
 		CreateCubemapTexture(ComPtr<ID3D11Device>& device, const wchar_t* filename,
 			ComPtr<ID3D11ShaderResourceView>& texResView);
 
-};
 
+private:
+	static mutex lock;
+};
