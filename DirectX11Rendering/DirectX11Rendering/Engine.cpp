@@ -77,6 +77,25 @@ bool Engine::Initialize()
 
 void Engine::Update(float dt)
 {
+
+	if (m_rightButtonDowm)
+	{
+		if (m_keyPressed[87])
+			GetMainCamera()->MoveForward(dt);
+		if (m_keyPressed[83])
+			GetMainCamera()->MoveForward(-dt);
+		if (m_keyPressed[68])
+			GetMainCamera()->MoveRight(dt);
+		if (m_keyPressed[65])
+			GetMainCamera()->MoveRight(-dt);
+	}
+
+	if (m_keyPressed[0x10])
+		GetMainCamera()->SetSpeedUp(true);
+	else
+		GetMainCamera()->SetSpeedUp(false);
+
+
 	m_mainCamera->Update(dt);
 
 	m_directionalLight->Update(dt);
@@ -147,6 +166,20 @@ void Engine::Render()
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+}
+
+void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
+{
+	EngineBase::OnMouseMove(wParam, mouseX, mouseY);
+
+	weak_ptr<Camera> pWeakCamera = GetMainCamera();
+	if (pWeakCamera.expired())
+		return;
+
+	shared_ptr<Camera> pCamera = pWeakCamera.lock();
+
+	if(m_rightButtonDowm)
+		pCamera->UpdateMouse(m_mouseCursorNdcX, m_mouseCursorNdxY);
 }
 
 void Engine::UpdateMeshes(ThreadParam param)

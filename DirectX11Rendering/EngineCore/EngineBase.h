@@ -24,6 +24,9 @@ protected:
 	bool InitDirectX();
 	bool InitGUI();
 
+protected:
+	virtual void OnMouseMove(WPARAM wParam, int mouseX, int mouseY);
+
 public:
 	float GetAspectRatio();
 
@@ -61,6 +64,17 @@ protected:
 	D3D11_VIEWPORT m_viewport;
 
 	UINT m_numQualityLevels;
+
+protected:
+	bool m_keyPressed[256] = { false, };
+
+	int m_mouseCursorX;
+	int m_mouseCursorY;
+	float m_mouseCursorNdcX;
+	float m_mouseCursorNdxY;
+
+	bool m_leftButtonDown;
+	bool m_rightButtonDowm;
 };
 
 extern EngineBase* g_EngineBase;

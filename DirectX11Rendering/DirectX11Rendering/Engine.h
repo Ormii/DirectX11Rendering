@@ -20,6 +20,9 @@ public:
 	virtual void Render() override;
 
 
+protected:
+	virtual void OnMouseMove(WPARAM wParam, int mouseX, int mouseY) override;
+
 private:
 	vector<ComPtr<ID3D11CommandList>> m_commandLists;
 

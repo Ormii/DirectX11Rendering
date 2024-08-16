@@ -90,12 +90,50 @@ LRESULT EngineBase::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     switch (msg)
     {
+        case WM_MOUSEMOVE:
+        {
+            m_mouseCursorX = LOWORD(lParam);
+            m_mouseCursorY = HIWORD(lParam);
+
+            OnMouseMove(wParam, m_mouseCursorX, m_mouseCursorY);
+        }
+            break;
+        case WM_LBUTTONDOWN:
+        {
+            m_leftButtonDown = true;
+        }
+            break;
+        case WM_LBUTTONUP:
+        {
+            m_leftButtonDown = false;
+        }
+            break;
+        case WM_RBUTTONDOWN:
+        {
+            m_rightButtonDowm = true;
+        }
+            break;
+        case WM_RBUTTONUP:
+        {
+            m_rightButtonDowm = false;
+        }
+            break;
+        case WM_KEYDOWN:
+        {
+            m_keyPressed[wParam] = true;
+        }
+            break;
+        case WM_KEYUP:
+        {
+            m_keyPressed[wParam] = false;
+        }
+            break;
         case WM_DESTROY:
         {
             ::PostQuitMessage(0);
             return 0;
         }
-        break;
+            break;
     }
 
     return ::DefWindowProc(hwnd, msg, wParam, lParam);
@@ -274,6 +312,16 @@ bool EngineBase::InitGUI()
     }
 
     return true;
+}
+
+void EngineBase::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
+{
+    float aspect = GetAspectRatio();
+    m_mouseCursorNdcX = static_cast<float>(mouseX * 2.0f )/ m_screenWidth - 1.0f;
+    m_mouseCursorNdxY = -static_cast<float>(mouseY * 2.0f)/ m_screenHeight + 1.0f;
+
+    m_mouseCursorNdcX = std::clamp(m_mouseCursorNdcX, -1.0f, 1.0f);
+    m_mouseCursorNdxY = std::clamp(m_mouseCursorNdxY, -1.0f, 1.0f);
 }
 
 float EngineBase::GetAspectRatio()
