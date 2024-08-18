@@ -3,9 +3,7 @@
 
 Camera::Camera()
 {
-	m_forwardDir = Vector3(0.0f, 0.0f, 1.0f);
-	m_rightDir = Vector3(1.0f, 0.0f, 0.0f);
-	m_upDir = Vector3(0.0f, 1.0f, 0.0f);
+	
 }
 
 void Camera::Update(float dt)
@@ -16,17 +14,35 @@ void Camera::Update(float dt)
 
 	m_aspect = pEngine->GetAspectRatio();
 
-	m_rotation.x = m_pitch;
-	m_rotation.y = -m_yaw;
+	float pitch = m_rotation.x;
+	float yaw = m_rotation.y;
+	float roll = m_rotation.z;
+
+	auto rotationMatrix = Matrix::CreateFromYawPitchRoll(yaw, -pitch, roll);
+
+	Vector3 Look = Vector3(0.0f, 0.0f, 1.0f);
+	Look = Vector3::Transform(Look, rotationMatrix);
+	Look.Normalize();
+
+	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
+	up = Vector3::Transform(up, rotationMatrix);
+	up.Normalize();
+
+	Vector3 target = Vector3(m_translation.x + Look.x,
+		m_translation.y + Look.y,
+		m_translation.z + Look.z);
+		
+	m_viewMatrix = Matrix::CreateLookAt(m_translation, target, up);
+
+	m_rightDir = Vector3(m_viewMatrix.m[0][0], m_viewMatrix.m[1][0], m_viewMatrix.m[2][0]);
+	m_upDir = Vector3(m_viewMatrix.m[0][1], m_viewMatrix.m[1][1], m_viewMatrix.m[2][1]);
+	m_forwardDir = Vector3(m_viewMatrix.m[0][2], m_viewMatrix.m[1][2], m_viewMatrix.m[2][2]);
 }
 
-void Camera::UpdateMouse(float mouseNdcX, float mouseNdcY)
+void Camera::UpdateMouse(float deltaMouseNdcX, float deltaMouseNdcY)
 {
-	m_yaw = mouseNdcX * DirectX::XM_2PI;
-	m_pitch = mouseNdcY * DirectX::XM_PIDIV2;
-
-	m_forwardDir = Vector3::Transform(Vector3(0.0f, 0.0f, -1.0f), Matrix::CreateRotationY(m_yaw));
-	m_rightDir = m_upDir.Cross(m_forwardDir);
+	m_rotation.y += deltaMouseNdcX * DirectX::XM_2PI;
+	m_rotation.x += -deltaMouseNdcY * DirectX::XM_PIDIV2;
 }
 
 void Camera::MoveForward(float dt)
@@ -41,9 +57,7 @@ void Camera::MoveRight(float dt)
 
 Matrix Camera::GetViewMat()
 {
-	return Matrix::CreateTranslation(m_translation)
-		* Matrix::CreateRotationY(m_rotation.y)
-		* Matrix::CreateRotationX(m_rotation.x);
+	return m_viewMatrix;
 }
 
 Matrix Camera::GetPersMat()

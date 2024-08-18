@@ -73,6 +73,9 @@ protected:
 	float m_mouseCursorNdcX;
 	float m_mouseCursorNdxY;
 
+	float m_mousePrevCurserNdcX;
+	float m_mousePrevCurserNdcY;
+
 	bool m_leftButtonDown;
 	bool m_rightButtonDowm;
 };

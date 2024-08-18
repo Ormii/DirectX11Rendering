@@ -104,8 +104,7 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		invTransposeRow.Translation(Vector3(0.0f));
 		invTransposeRow = invTransposeRow.Transpose().Invert();
 
-		auto viewRow = Matrix::CreateTranslation(pEngine->GetMainCamera()->GetTranslation())* Matrix::CreateRotationY(pEngine->GetMainCamera()->GetRotation().y) *
-			Matrix::CreateRotationX(pEngine->GetMainCamera()->GetRotation().x);
+		auto viewRow = pEngine->GetMainCamera()->GetViewMat();
 
 		const float aspect = pEngine->GetAspectRatio();
 		Matrix projRow = Matrix();

@@ -317,6 +317,10 @@ bool EngineBase::InitGUI()
 void EngineBase::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
 {
     float aspect = GetAspectRatio();
+
+    m_mousePrevCurserNdcX = m_mouseCursorNdcX;
+    m_mousePrevCurserNdcY = m_mouseCursorNdxY;
+
     m_mouseCursorNdcX = static_cast<float>(mouseX * 2.0f )/ m_screenWidth - 1.0f;
     m_mouseCursorNdxY = -static_cast<float>(mouseY * 2.0f)/ m_screenHeight + 1.0f;
 

@@ -46,5 +46,7 @@ private:
     Vector3 m_forwardDir;
     Vector3 m_rightDir;
     Vector3 m_upDir;
+
+    Matrix m_viewMatrix;
 };
 

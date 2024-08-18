@@ -23,7 +23,8 @@ bool Engine::Initialize()
 		return false;
 
 	m_mainCamera = std::make_shared<Camera>();
-	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 10.0);
+	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -10.0);
+	m_mainCamera->GetRotation() = Vector3(0.0f, 3.14f, 0.0f);
 
 	m_cubeMap = make_shared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
@@ -196,7 +197,7 @@ void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
 	shared_ptr<Camera> pCamera = pWeakCamera.lock();
 
 	if(m_rightButtonDowm)
-		pCamera->UpdateMouse(m_mouseCursorNdcX, m_mouseCursorNdxY);
+		pCamera->UpdateMouse(m_mouseCursorNdcX - m_mousePrevCurserNdcX, m_mouseCursorNdxY - m_mousePrevCurserNdcY);
 }
 
 void Engine::UpdateMeshes(ThreadParam param)
