@@ -340,6 +340,16 @@ bool EngineBase::CreateRenderTargetView()
     if (pBackBuffer)
     {
         m_device->CreateRenderTargetView(pBackBuffer.Get(), NULL, m_renderTargetView.GetAddressOf());
+
+        D3D11_TEXTURE2D_DESC desc;
+        pBackBuffer->GetDesc(&desc);
+        desc.SampleDesc.Count = 1;
+        desc.SampleDesc.Quality = 0;
+        desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+        desc.MiscFlags = 0;
+
+        m_device->CreateTexture2D(&desc, nullptr, m_tempTexture.GetAddressOf());
+        m_device->CreateShaderResourceView(m_tempTexture.Get(), nullptr, m_shaderResourceView.GetAddressOf());
     }
     else
     {

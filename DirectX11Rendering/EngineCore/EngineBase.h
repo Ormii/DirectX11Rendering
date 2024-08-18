@@ -49,6 +49,9 @@ public:
 	ComPtr<ID3D11RasterizerState> GetWiredRasterizerState() { return m_wireRasterizerState; }
 
 	D3D11_VIEWPORT* GetViewport() { return &m_viewport; }
+
+	ComPtr<ID3D11ShaderResourceView> GetShaderResourceView() { return m_shaderResourceView; }
+
 protected:
 	ComPtr<ID3D11Device> m_device;
 	ComPtr<ID3D11DeviceContext> m_context;
@@ -64,6 +67,9 @@ protected:
 	D3D11_VIEWPORT m_viewport;
 
 	UINT m_numQualityLevels;
+
+	ComPtr<ID3D11Texture2D> m_tempTexture;
+	ComPtr<ID3D11ShaderResourceView> m_shaderResourceView;
 
 protected:
 	bool m_keyPressed[256] = { false, };

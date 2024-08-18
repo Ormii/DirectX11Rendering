@@ -11,6 +11,7 @@
 #include "Mesh.h"
 #include "Model.h"
 #include "CubeMap.h"
+#include "ImageFilter.h"
 
 #include "Engine.h"
 

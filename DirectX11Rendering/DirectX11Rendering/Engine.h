@@ -33,6 +33,8 @@ private:
 	void RenderCubMap(ThreadParam param);
 
 	mutex m_lock;
+
+
 public:
 	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }
 
@@ -55,6 +57,11 @@ private:
 	std::weak_ptr<Model> m_targetModel;
 	std::weak_ptr<Light> m_targetLight;
 
+private:
+	vector<std::shared_ptr<ImageFilter>> m_imageFilters;
+
+	float m_threshold = 0.1f;
+	float m_strength = 0.1f;
 };
 
 extern ThreadManager<Engine>* g_ThreadManager;

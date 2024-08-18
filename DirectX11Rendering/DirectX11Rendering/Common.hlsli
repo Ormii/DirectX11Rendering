@@ -3,7 +3,6 @@
 #define NUM_POINT_LIGHTS 1
 #define NUM_SPOT_LIGHTS 1
 
-// ����
 struct Material
 {
     float3 ambient;
@@ -14,7 +13,6 @@ struct Material
     float dummy2;
 };
 
-// ����
 struct LightData
 {
     float3 strength;

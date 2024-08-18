@@ -78,6 +78,42 @@ bool Engine::Initialize()
 	m_targetModel = zelda;
 	m_targetLight = m_spotLights[0];
 
+
+	auto saveImageFilter = make_shared<ImageFilter>();
+	saveImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", m_screenWidth, m_screenHeight);
+	saveImageFilter->GetIsNotUseThreshold() = true;
+	saveImageFilter->SetShaderResources({ m_shaderResourceView });
+	saveImageFilter->Update(m_device, m_context, 0);
+	m_imageFilters.push_back(saveImageFilter);
+
+	auto copyImageFilter = make_shared<ImageFilter>();
+	copyImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", m_screenWidth, m_screenHeight);
+	copyImageFilter->SetShaderResources({ m_shaderResourceView });
+	m_imageFilters.push_back(copyImageFilter);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		auto blurXImgFilter = make_shared<ImageFilter>();
+		blurXImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurX", m_screenWidth / 4, m_screenHeight / 4);
+		blurXImgFilter->SetShaderResources({ m_imageFilters.back()->GetShaderResourceView() });
+
+		m_imageFilters.push_back(blurXImgFilter);
+
+		auto blurYImgFilter = make_shared<ImageFilter>();
+		blurYImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurY", m_screenWidth / 4, m_screenHeight / 4);
+		blurYImgFilter->SetShaderResources({ m_imageFilters.back()->GetShaderResourceView() });
+
+		m_imageFilters.push_back(blurYImgFilter);
+	}
+
+	auto mergeImageFilter = make_shared<ImageFilter>();
+	mergeImageFilter->Initialize(m_device, m_context, L"Merge", L"Merge", m_screenWidth, m_screenHeight);
+	mergeImageFilter->SetShaderResources({ m_imageFilters.front()->GetShaderResourceView(),m_imageFilters.back()->GetShaderResourceView() });
+	mergeImageFilter->SetRenderTargets({ m_renderTargetView });
+
+	m_imageFilters.push_back(mergeImageFilter);
+
+
 	return true;
 }
 
@@ -120,6 +156,15 @@ void Engine::Update(float dt)
 	g_ThreadManager->Launch(&Engine::UpdateCubeMap, this, ThreadParam{ 1, dt });
 
 	g_ThreadManager->Join();
+
+	for (auto& imageFilter : m_imageFilters)
+	{
+		imageFilter->Update(m_device, m_context, dt);
+
+		imageFilter->GetPixelConstantBufferData().strength = m_strength;
+		if(imageFilter->GetIsNotUseThreshold() == false)
+			imageFilter->GetPixelConstantBufferData().threshold = m_threshold;
+	}
 }
 
 void Engine::UpdateGUI()
@@ -146,6 +191,9 @@ void Engine::UpdateGUI()
 		ImGui::SliderFloat("Target Light FallOffEnd", &targetLight->GetLightData().fallOffEnd, 0.0f, 10.0f);
 		ImGui::SliderFloat("Target Light SpotPower", &targetLight->GetLightData().spotPower, 0.0f, 512.0f);
 	}
+
+	ImGui::SliderFloat("Blur Threshold", &m_threshold, 0.0f, 1.0f);
+	ImGui::SliderFloat("Blur Strength", &m_strength, 0.0f, 20.0f);
 }
 
 void Engine::Render()
@@ -181,9 +229,19 @@ void Engine::Render()
 
 	m_commandLists.clear();
 
+	ComPtr<ID3D11Texture2D> backBuffer;
+	m_swapChain->GetBuffer(0, IID_PPV_ARGS(backBuffer.GetAddressOf()));
+	m_context->ResolveSubresource(m_tempTexture.Get(), 0, backBuffer.Get(), 0, DXGI_FORMAT_R8G8B8A8_UNORM);
+
+	for (auto& imageFilter : m_imageFilters)
+	{
+		imageFilter->Render(m_context);
+	}
+
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
+
 }
 
 void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)

@@ -37,6 +37,15 @@
     <Filter Include="Shader\CubeMap">
       <UniqueIdentifier>{034c4306-5507-4763-974d-0707d6581a1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Object\ImageFilter">
+      <UniqueIdentifier>{6a5a2c2c-a22e-44de-8ec8-15e12760888d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\ImageFilter">
+      <UniqueIdentifier>{112158e7-6afc-49fb-b9fe-28915e128dda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader\ImageFilter\Blur">
+      <UniqueIdentifier>{aff54191-9f0d-442b-9fdc-ef51e5d5e3aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -62,6 +71,9 @@
     </ClCompile>
     <ClCompile Include="CubeMap.cpp">
       <Filter>CubeMap</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageFilter.cpp">
+      <Filter>Object\ImageFilter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,6 +104,9 @@
     <ClInclude Include="CubeMap.h">
       <Filter>CubeMap</Filter>
     </ClInclude>
+    <ClInclude Include="ImageFilter.h">
+      <Filter>Object\ImageFilter</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="ModelPixelShader.hlsl">
@@ -111,6 +126,27 @@
     </FxCompile>
     <FxCompile Include="CubeMapPixelShader.hlsl">
       <Filter>Shader\CubeMap</Filter>
+    </FxCompile>
+    <FxCompile Include="CopyImageFilterVertexShader.hlsl">
+      <Filter>Shader\ImageFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="CopyImageFilterPixelShader.hlsl">
+      <Filter>Shader\ImageFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurImageFilterVertexShader.hlsl">
+      <Filter>Shader\ImageFilter\Blur</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurXImageFilterPixelShader.hlsl">
+      <Filter>Shader\ImageFilter\Blur</Filter>
+    </FxCompile>
+    <FxCompile Include="BlurYImageFilterPixelShader.hlsl">
+      <Filter>Shader\ImageFilter\Blur</Filter>
+    </FxCompile>
+    <FxCompile Include="MergeImageFilterPixelShader.hlsl">
+      <Filter>Shader\ImageFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="MergeImageFilterVertexShader.hlsl">
+      <Filter>Shader\ImageFilter</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
