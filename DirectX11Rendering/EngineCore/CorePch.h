@@ -16,6 +16,7 @@
 #include <functional>
 #include <filesystem>
 #include <cstring>
+#include <unordered_map>
 
 #include <vector>
 
@@ -53,14 +54,16 @@ using std::wstring;
 -----------------------------*/
 #include "Types.h"
 #include "CoreMacro.h"
-#include "ThreadInfo.h"
-#include "ModelLoader.h"
+#include "Lock.h"
 #include "MeshData.h"
+#include "ThreadInfo.h"
+#include "ResourceManager.h"
+#include "ThreadManager.h"
+#include "ModelLoader.h"
 #include "EngineUtility.h"
 #include "EngineBase.h"
 #include "GeometryGenerator.h"
 
-#include "ThreadManager.h"
 
 #define MAIN_WINDOW_WIDTH	1280
 #define MAIN_WINDOW_HEIGHT	960

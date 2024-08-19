@@ -47,6 +47,8 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"ModelVertexShader.hlsl", inputElements, m_modelVertexShader, m_modelInputLayout);
 	EngineUtility::CreatePixelShader(device, context, L"ModelPixelShader.hlsl", m_modelPixelShader);
 
+	/*
+	
 	m_normalLines = std::make_shared<Mesh>();
 
 	std::vector<Vertex> normalVertices;
@@ -84,6 +86,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	EngineUtility::CreateConstantBuffer(device, context, m_normalVertexConstantData,
 		m_normalVertexConstantBuffer);
+	*/
 }
 
 void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
@@ -135,6 +138,7 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		EngineUtility::UpdateBuffer(device, context, m_modelVertexConstantData, mesh->vertexConstantBuffer);
 		EngineUtility::UpdateBuffer(device, context, m_modelPixelConstantData, mesh->pixelConstantBuffer);
 	}
+	/*
 
 	if (g_bUseDrawNormals)
 	{
@@ -142,6 +146,7 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		EngineUtility::UpdateBuffer(device, context, m_normalVertexConstantData,
 			m_normalVertexConstantBuffer);
 	}
+	*/
 }
 
 void Model::Render(ComPtr<ID3D11DeviceContext>& context)
@@ -180,6 +185,7 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->DrawIndexed(mesh->m_indexCount, 0, 0);
 	}
 
+	/*
 	if (g_bUseDrawNormals)
 	{
 		context->VSSetShader(m_normalVertexShader.Get(), 0, 0);
@@ -195,6 +201,7 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
 		context->DrawIndexed(m_normalLines->m_indexCount, 0, 0);
 	}
+	*/
 }
 
 void Model::Update(float dt)

@@ -7,6 +7,7 @@ bool g_bUseDrawWireFrame = false;
 
 ThreadManager<Engine>* g_ThreadManager = nullptr;
 
+
 Engine::Engine()
 {
 	g_ThreadManager = new ThreadManager<Engine>();
@@ -23,19 +24,26 @@ bool Engine::Initialize()
 		return false;
 
 	m_mainCamera = std::make_shared<Camera>();
-	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -10.0);
+	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -30.0);
 	m_mainCamera->GetRotation() = Vector3(0.0f, 3.14f, 0.0f);
 
 	m_cubeMap = make_shared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
 
-	auto zelda = make_shared<Model>();
-	zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
-	zelda->GetTranslation() = Vector3(0.0f, 0.0f, -3.5f);
-	zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
-	zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
-	zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
-	m_models.push_back(zelda);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		for (int j = 0; j < 10; ++j)
+		{
+			auto zelda = make_shared<Model>();
+			zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
+			zelda->GetTranslation() = Vector3(-1 + i, 0.0f, -1 + j);
+			zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
+			zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+			zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
+			m_models.push_back(zelda);
+		}
+	}
 
 	auto floor = make_shared<Model>();
 	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
@@ -75,7 +83,7 @@ bool Engine::Initialize()
 	m_spotLights[0]->GetLightData().fallOffStart = 3.0f;
 	m_spotLights[0]->GetLightData().fallOffEnd = 8.0f;
 
-	m_targetModel = zelda;
+	m_targetModel = m_models.back();
 	m_targetLight = m_spotLights[0];
 
 
@@ -152,8 +160,16 @@ void Engine::Update(float dt)
 		light->Update(dt);
 	}
 
-	g_ThreadManager->Launch(&Engine::UpdateMeshes, this, ThreadParam{ 0,  dt});
-	g_ThreadManager->Launch(&Engine::UpdateCubeMap, this, ThreadParam{ 1, dt });
+	uint32 threadId = 1;
+	uint32 step = (m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
+	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
+	{
+		uint32 startIdx = i;
+		uint32 endIdx = std::min(i + step,(uint32)m_models.size());
+		g_ThreadManager->Launch(&Engine::UpdateMeshes, this, ThreadParam{ threadId, threadId, dt,startIdx, endIdx });
+	}
+
+	g_ThreadManager->Launch(&Engine::UpdateCubeMap, this, ThreadParam{ threadId, threadId, dt });
 
 	g_ThreadManager->Join();
 
@@ -204,19 +220,18 @@ void Engine::Render()
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
-	m_commandLists.resize(2);
-
+	uint32 threadId = 1;
+	uint32 step = (m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
+	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
 	{
-		ThreadParam MeshRenderThreadParam{};
-		MeshRenderThreadParam.commandListIdx = 0;
-
-		g_ThreadManager->Launch(&Engine::RenderMeshes, this, MeshRenderThreadParam);
+		uint32 startIdx = i;
+		uint32 endIdx = std::min(i + step, (uint32)m_models.size());
+		g_ThreadManager->Launch(&Engine::RenderMeshes, this, ThreadParam{ threadId, threadId, 0,startIdx, endIdx });
 	}
 
 	{
-		ThreadParam CubeMapRenderThreadParam{};
-		CubeMapRenderThreadParam.commandListIdx = 1;
-		g_ThreadManager->Launch(&Engine::RenderCubMap, this, CubeMapRenderThreadParam);
+		g_ThreadManager->Launch(&Engine::RenderCubMap, this, ThreadParam{ threadId, threadId, 0,0, 0 });
+		threadId++;
 	}
 
 	g_ThreadManager->Join();
@@ -241,7 +256,6 @@ void Engine::Render()
 	m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
 	m_context->OMSetDepthStencilState(m_depthStencilState.Get(), 0);
-
 }
 
 void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
@@ -258,27 +272,47 @@ void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
 		pCamera->UpdateMouse(m_mouseCursorNdcX - m_mousePrevCurserNdcX, m_mouseCursorNdxY - m_mousePrevCurserNdcY);
 }
 
+void Engine::LoadResources()
+{
+
+
+
+}
+
 void Engine::UpdateMeshes(ThreadParam param)
 {
-	for (auto& mesh : m_models)
+	for (int32 i = param.startIdx; i < param.endIdx; ++i)
 	{
-		mesh->Update(param.deltatime);
-		mesh->UpdateConstantBuffers(m_device, m_context);
+		m_models[i]->Update(param.deltatime);
+		m_models[i]->UpdateConstantBuffers(m_device, m_context);
 	}
 }
 
 void Engine::UpdateCubeMap(ThreadParam param)
 {
+	LthreadID = param.threadID;
 	m_cubeMap->Update(m_device, m_context, param.deltatime);
 }
 
 void Engine::RenderMeshes(ThreadParam param)
 {
+	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
-	m_lock.lock();
-	m_device->CreateDeferredContext(0, &deferredContext);
-	m_lock.unlock();
+	m_deviceLock.ReadLock();
+	HRESULT hr =  m_device->CreateDeferredContext(0, &deferredContext);
+	if (FAILED(hr)) // HRESULT가 실패 상태인지 확인
+	{
+		std::cerr << "Error: " << "Failed to create deferred context" << " (HRESULT: " << std::hex << hr << ")" << std::endl;
+
+		// 추가로 필요한 오류 처리 (예: 오류에 따른 리소스 정리)
+		// ...
+
+		// 예외를 던지거나 프로그램을 종료할 수도 있습니다.
+		// throw std::runtime_error("HRESULT failed");
+	}
+	
+	m_deviceLock.ReadUnLock();
 
 	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
@@ -293,27 +327,30 @@ void Engine::RenderMeshes(ThreadParam param)
 	viewport.MaxDepth = 1.0f;
 	deferredContext->RSSetViewports(1, &viewport);
 
-	for (auto& model : m_models)
+	for (int32 i = param.startIdx; i < param.endIdx; ++i)
 	{
-		model->Render(deferredContext);
+		m_models[i]->Render(deferredContext);
 	}
 
 	ComPtr<ID3D11CommandList> commandList;
 	deferredContext->FinishCommandList(FALSE, &commandList);
 
-	m_lock.lock();
+	m_commandListLock.WriteLock();
+	if (m_commandLists.size() <= param.commandListIdx)
+		m_commandLists.resize(param.commandListIdx + 1);
+
 	m_commandLists[param.commandListIdx] = commandList;
-	m_lock.unlock();
+	m_commandListLock.WriteUnlock();
 }
 
 void Engine::RenderCubMap(ThreadParam param)
 {
+	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
-	m_lock.lock();
+	m_deviceLock.ReadLock();
 	m_device->CreateDeferredContext(0, &deferredContext);
-	m_lock.unlock();
-
+	m_deviceLock.ReadUnLock();
 
 	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
 		m_depthStencilView.Get());
@@ -333,7 +370,10 @@ void Engine::RenderCubMap(ThreadParam param)
 	ComPtr<ID3D11CommandList> commandList;
 	deferredContext->FinishCommandList(FALSE, &commandList);
 
-	m_lock.lock();
+	m_commandListLock.WriteLock();
+	if (m_commandLists.size() <= param.commandListIdx)
+		m_commandLists.resize(param.commandListIdx + 1);
+
 	m_commandLists[param.commandListIdx] = commandList;
-	m_lock.unlock();
+	m_commandListLock.WriteUnlock();
 }

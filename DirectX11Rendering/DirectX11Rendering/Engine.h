@@ -24,6 +24,9 @@ protected:
 	virtual void OnMouseMove(WPARAM wParam, int mouseX, int mouseY) override;
 
 private:
+	void LoadResources();
+
+private:
 	vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
 	void UpdateMeshes(ThreadParam param);
@@ -32,8 +35,10 @@ private:
 	void RenderMeshes(ThreadParam param);
 	void RenderCubMap(ThreadParam param);
 
-	mutex m_lock;
-
+	Lock m_deviceLock;
+	Lock m_contextLock;
+	Lock m_commandListLock;
+	Lock m_modelLock;
 
 public:
 	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }

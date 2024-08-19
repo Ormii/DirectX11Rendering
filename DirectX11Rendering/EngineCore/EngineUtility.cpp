@@ -73,49 +73,66 @@ void CheckResult(HRESULT hr, ID3DBlob* errorBlob) {
 
 void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename, const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
 {
-    ComPtr<ID3DBlob> shaderBlob;
     ComPtr<ID3DBlob> errorBlob;
 
-    UINT compileFlags = 0;
+    VertexShaderInfo vsInfo{};
+
+    if (!g_ResourceManager->GetVsShader(filename, vsInfo))
+    {
+        UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)
-    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+        compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
 
-    HRESULT hr = D3DCompileFromFile(
-        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
-        "vs_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
+        HRESULT hr = D3DCompileFromFile(
+            filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+            "vs_5_0", compileFlags, 0, &vsInfo.m_shaderBlob, &errorBlob);
 
-    CheckResult(hr, errorBlob.Get());
+        CheckResult(hr, errorBlob.Get());
 
-    device->CreateVertexShader(shaderBlob->GetBufferPointer(),
-        shaderBlob->GetBufferSize(), NULL,
-        &vertexShader);
+        device->CreateVertexShader(vsInfo.m_shaderBlob->GetBufferPointer(),
+            vsInfo.m_shaderBlob->GetBufferSize(), NULL,
+            &vsInfo.m_vertexShader);
 
-    device->CreateInputLayout(inputElements.data(),
-        UINT(inputElements.size()),
-        shaderBlob->GetBufferPointer(),
-        shaderBlob->GetBufferSize(), &inputLayout);
+        device->CreateInputLayout(inputElements.data(),
+            UINT(inputElements.size()),
+            vsInfo.m_shaderBlob->GetBufferPointer(),
+            vsInfo.m_shaderBlob->GetBufferSize(), &vsInfo.m_inputLayout);
+
+        g_ResourceManager->SetVsShader(filename, vsInfo);
+    }
+
+    vertexShader = vsInfo.m_vertexShader;
+    inputLayout = vsInfo.m_inputLayout;
 }
 
 void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
 {
-    ComPtr<ID3DBlob> shaderBlob;
     ComPtr<ID3DBlob> errorBlob;
 
+    PixelShaderInfo psInfo{};
 
-    UINT compileFlags = 0;
-#if defined(DEBUG) || defined(_DEBUG)
-    compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
+    if (!g_ResourceManager->GetPsShader(filename, psInfo))
+    {
+        UINT compileFlags = 0;
+    #if defined(DEBUG) || defined(_DEBUG)
+        compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+    #endif
 
-    HRESULT hr = D3DCompileFromFile(
-        filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
-        "ps_5_0", compileFlags, 0, &shaderBlob, &errorBlob);
+        HRESULT hr = D3DCompileFromFile(
+            filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+            "ps_5_0", compileFlags, 0, &psInfo.m_shaderBlob, &errorBlob);
 
-    CheckResult(hr, errorBlob.Get());
+        CheckResult(hr, errorBlob.Get());
 
-    device->CreatePixelShader(shaderBlob->GetBufferPointer(), shaderBlob->GetBufferSize(), NULL, &pixelShader);
+        device->CreatePixelShader(psInfo.m_shaderBlob->GetBufferPointer(), psInfo.m_shaderBlob->GetBufferSize(), NULL, &psInfo.m_pixelShader);
+
+        g_ResourceManager->SetPsShader(filename, psInfo);
+    }
+
+    pixelShader = psInfo.m_pixelShader;
+
 }
 
 void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer)
@@ -139,34 +156,41 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const std::string
     ComPtr<ID3D11Texture2D>& texture,
     ComPtr<ID3D11ShaderResourceView>& textureResourceView)
 {
-    int width, height, channels;
+    TextureInfo textureInfo{};
 
-    unsigned char* img =
-        stbi_load(filename.c_str(), &width, &height, &channels, 0);
-
-    std::vector<uint8_t> image(width * height * 4, 0);
-    for (size_t i = 0; i < width * height; ++i)
+    if (!g_ResourceManager->GetTexture(filename, textureInfo))
     {
-        for (size_t c = 0; c < 3; ++c)
-            image[4 * i + c] = img[i * channels + c];
-        image[4 * i + 3] = 255;
+        unsigned char* img =
+            stbi_load(filename.c_str(), &textureInfo.m_width, &textureInfo.m_height, &textureInfo.m_channels, 0);
+        textureInfo.m_image.resize(textureInfo.m_width * textureInfo.m_height * 4);
+        for (size_t i = 0; i < textureInfo.m_width * textureInfo.m_height; ++i)
+        {
+            for (size_t c = 0; c < 3; ++c)
+                textureInfo.m_image[4 * i + c] = img[i * textureInfo.m_channels + c];
+            textureInfo.m_image[4 * i + 3] = 255;
+        }
+
+        D3D11_TEXTURE2D_DESC textureDesc{};
+        textureDesc.Width = textureInfo.m_width;
+        textureDesc.Height = textureInfo.m_height;
+        textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        textureDesc.MipLevels = textureDesc.ArraySize = 1;
+        textureDesc.SampleDesc.Count = 1;
+        textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
+        textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+        D3D11_SUBRESOURCE_DATA initData{};
+        initData.pSysMem = textureInfo.m_image.data();
+        initData.SysMemPitch = textureDesc.Width * sizeof(uint8_t) * 4;
+
+        device->CreateTexture2D(&textureDesc, &initData, textureInfo.m_texture.GetAddressOf());
+        device->CreateShaderResourceView(textureInfo.m_texture.Get(), nullptr, textureInfo.m_shaderResView.GetAddressOf());
+
+        g_ResourceManager->SetTexture(filename, textureInfo);
     }
 
-    D3D11_TEXTURE2D_DESC textureDesc{};
-    textureDesc.Width = width;
-    textureDesc.Height = height;
-    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    textureDesc.MipLevels = textureDesc.ArraySize = 1;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
-    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-
-    D3D11_SUBRESOURCE_DATA initData{};
-    initData.pSysMem = image.data();
-    initData.SysMemPitch = textureDesc.Width * sizeof(uint8_t) * 4;
-
-    device->CreateTexture2D(&textureDesc, &initData, texture.GetAddressOf());
-    device->CreateShaderResourceView(texture.Get(), nullptr, textureResourceView.GetAddressOf());
+    texture = textureInfo.m_texture;
+    textureResourceView = textureInfo.m_shaderResView;
 }
 
 void EngineUtility::CreateCubemapTexture(ComPtr<ID3D11Device>& device, const wchar_t* filename, ComPtr<ID3D11ShaderResourceView>& texResView)

@@ -3,6 +3,7 @@
 #include "ThreadManager.h"
 
 EngineBase* g_EngineBase = nullptr;
+ResourceManager* g_ResourceManager = nullptr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -15,6 +16,7 @@ EngineBase::EngineBase()
 	:m_screenWidth(MAIN_WINDOW_WIDTH), m_screenHeight(MAIN_WINDOW_HEIGHT), m_hwnd(0), m_numQualityLevels(0), m_viewport(D3D11_VIEWPORT())
 {
 	g_EngineBase = this;
+    g_ResourceManager = new ResourceManager();
 }
 
 EngineBase::~EngineBase()

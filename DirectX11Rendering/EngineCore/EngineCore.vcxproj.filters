@@ -19,6 +19,12 @@
     <Filter Include="Model\Mesh">
       <UniqueIdentifier>{f7f184f8-99b1-4c52-a477-e0af06106500}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Thread\Lock">
+      <UniqueIdentifier>{90090306-d1b2-44f3-a0d1-98c6d35b17d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{525e6af6-5a21-4f16-b4e4-b3b90ccb5de8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorePch.h">
@@ -54,6 +60,12 @@
     <ClInclude Include="ModelLoader.h">
       <Filter>Model</Filter>
     </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Thread\Lock</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManager.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -76,6 +88,12 @@
     </ClCompile>
     <ClCompile Include="ModelLoader.cpp">
       <Filter>Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Thread\Lock</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManager.cpp">
+      <Filter>Resources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

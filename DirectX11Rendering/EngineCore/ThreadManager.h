@@ -6,7 +6,10 @@ class ThreadManager
 public:
 	ThreadManager()
 	{
-		InitTLS();
+		m_maxThreadCount = 1;
+		if (m_maxThreadCount < (uint32)std::thread::hardware_concurrency)
+			m_maxThreadCount = (uint32)std::thread::hardware_concurrency;
+
 	}
 
 	~ThreadManager()
@@ -15,14 +18,15 @@ public:
 	}
 
 public:
+	uint32 GetMaxThreadCount() { return m_maxThreadCount; }
+
+public:
 
 	void Launch(function<void(T&, ThreadParam)> callback, T* owner, ThreadParam Param)
 	{
 		lock_guard<mutex> guard(m_lock);
 		m_threads.push_back(thread([=]() {
-			InitTLS();
 			callback(*owner, Param);
-			DestroyTLS();
 		}));
 	}
 
@@ -37,15 +41,8 @@ public:
 		m_threads.clear();
 	}
 
-	static void InitTLS()
-	{
-
-	}
-
-	static void DestroyTLS()
-	{
-
-	}
+private:
+	uint32 m_maxThreadCount;
 
 private:
 	vector<thread> m_threads;
