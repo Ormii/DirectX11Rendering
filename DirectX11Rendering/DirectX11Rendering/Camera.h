@@ -29,6 +29,10 @@ public:
     Matrix GetPersMat();
     Matrix GetOrthMat();
 
+public:
+    void ConstructFrustomPlanes();
+    bool CheckBoundingSphereInFrustom(BoundingSphere& boundingSphere, Matrix&& World);
+    
 private:
     float m_aspect = 0.0f;
 
@@ -37,7 +41,7 @@ private:
     float m_nearZ = 0.01f;
     float m_farZ = 100.0f;
 
-    float m_moveSpeed = 1.0f;
+    float m_moveSpeed = 3.0f;
     bool m_bSpeedUp = false;
 
     float m_yaw;
@@ -48,5 +52,7 @@ private:
     Vector3 m_upDir;
 
     Matrix m_viewMatrix;
+
+    Vector4 m_planes[6];
 };
 

@@ -24,8 +24,8 @@ bool Engine::Initialize()
 		return false;
 
 	m_mainCamera = MakeShared<Camera>();
-	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -30.0);
-	m_mainCamera->GetRotation() = Vector3(0.0f, 3.14f, 0.0f);
+	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, 0.0);
+	m_mainCamera->GetRotation() = Vector3(0.0f, 0.0f, 0.0f);
 
 	m_cubeMap = MakeShared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
@@ -39,7 +39,7 @@ bool Engine::Initialize()
 			auto s = sizeof(*zelda);
 			zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
 			zelda->GetTranslation() = Vector3(-1.0f + i, 0.0f, -1.0f + j);
-			zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
+			//zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
 			zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
 			zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
 			m_models.push_back(zelda);
@@ -47,7 +47,9 @@ bool Engine::Initialize()
 	}
 
 	auto floor = MakeShared<Model>();
-	floor->Initialize(m_device, m_context, Vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
+	MeshData boxMeshData{};
+	GeometryGenerator::MakeBox("Floor", boxMeshData, 1.0f);
+	floor->Initialize(m_device, m_context, Vector<MeshData>{boxMeshData});
 	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
 	floor->GetRotation() = Vector3(3.14f / 2, 0.0f, 0.0f);
 	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);

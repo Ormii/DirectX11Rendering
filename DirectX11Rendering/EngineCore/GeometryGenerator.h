@@ -3,15 +3,15 @@
 class GeometryGenerator
 {
 public:
-    static Vector<MeshData> ReadFromFile(String basePath,
-        String filename);
+    static void ReadFromFile(String basePath,
+        String filename, Vector<MeshData>& meshes);
 
-    static MeshData MakeSquare();
-    static MeshData MakeBox(const float scale = 1.0f);
-    static MeshData MakeCylinder(const float bottomRadius,
+    static void MakeSquare(const String MeshName, MeshData& meshData);
+    static void MakeBox(const String MeshName, MeshData& meshData, const float scale = 1.0f);
+    static void MakeCylinder(const String MeshName, const float bottomRadius,
         const float topRadius, float height,
-        int numSlices);
-    static MeshData MakeSphere(const float radius, const int numSlices,
-        const int numStacks);
+        int numSlices, MeshData& meshData);
+    static void MakeSphere(const String MeshName, const float radius, const int numSlices,
+        const int numStacks, MeshData& meshData);
 };
 

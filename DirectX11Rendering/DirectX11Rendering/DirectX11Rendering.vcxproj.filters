@@ -46,6 +46,9 @@
     <Filter Include="Shader\ImageFilter\Blur">
       <UniqueIdentifier>{aff54191-9f0d-442b-9fdc-ef51e5d5e3aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader\Bounding">
+      <UniqueIdentifier>{17fbea48-63a0-4e8f-b400-e173f8cf67cc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -147,6 +150,12 @@
     </FxCompile>
     <FxCompile Include="MergeImageFilterVertexShader.hlsl">
       <Filter>Shader\ImageFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="BoundingVertexShader.hlsl">
+      <Filter>Shader\Bounding</Filter>
+    </FxCompile>
+    <FxCompile Include="BoundingPixelShader.hlsl">
+      <Filter>Shader\Bounding</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

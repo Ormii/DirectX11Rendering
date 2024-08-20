@@ -3,7 +3,8 @@
 
 void ImageFilter::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& prefixVertex, const WString& prefixPixel, float width, float height)
 {
-	MeshData meshData = GeometryGenerator::MakeSquare();
+	MeshData meshData{};
+	GeometryGenerator::MakeSquare("ImageFilter", meshData);
 	m_mesh = make_shared<Mesh>();
 	
 	EngineUtility::CreateVertexBuffer(device, context, meshData.vertices, m_mesh->vertexBuffer);

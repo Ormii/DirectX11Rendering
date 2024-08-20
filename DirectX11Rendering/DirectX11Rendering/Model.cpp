@@ -4,7 +4,9 @@
 
 void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename)
 {
-	Vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
+	Vector<MeshData> meshes;
+	GeometryGenerator::ReadFromFile(basePath, filename, meshes);
+
 	Initialize(device, context, meshes);
 }
 
@@ -19,6 +21,9 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreateConstantBuffer(device, context, m_modelVertexConstantData, m_modelvertexConstantBuffer);
 	EngineUtility::CreateConstantBuffer(device, context, m_modelPixelConstantData, m_modelpixelConstantBuffer);
 
+	int32 totVerticesCount = 0;
+	Vector3 minPoint = Vector3(10000, 10000, 10000);
+	Vector3 maxPoint = Vector3(-10000, -10000, -10000);
 	for (const auto& meshData : meshes)
 	{
 		auto newmesh = MakeShared<Mesh>();
@@ -33,9 +38,25 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 		newmesh->vertexConstantBuffer = m_modelvertexConstantBuffer;
 		newmesh->pixelConstantBuffer = m_modelpixelConstantBuffer;
 		newmesh->m_indexCount = static_cast<UINT>(meshData.indices.size());
-
+		totVerticesCount += meshData.vertices.size();
 		this->m_meshes.push_back(newmesh);
+
+		m_boundingDefaultRadius = 0;
+		m_boundingDefaultCenter = Vector3(0.0f, 0.0f, 0.0f);
+		for (auto& obj : meshData.vertices)
+		{
+			minPoint.x = min(obj.position.x, minPoint.x);
+			minPoint.y = min(obj.position.y, minPoint.y);
+			minPoint.z = min(obj.position.z, minPoint.z);
+			maxPoint.x = max(obj.position.x, maxPoint.x);
+			maxPoint.y = max(obj.position.y, maxPoint.y);
+			maxPoint.z = max(obj.position.z, maxPoint.z);
+		}
 	}
+
+	m_boundingDefaultCenter = (minPoint + maxPoint)/2.0f;
+	m_boundingDefaultRadius = (maxPoint - minPoint).Length()/2.0f;
+
 
 	vector<D3D11_INPUT_ELEMENT_DESC> inputElements =
 	{
@@ -87,6 +108,16 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreateConstantBuffer(device, context, m_normalVertexConstantData,
 		m_normalVertexConstantBuffer);
 	*/
+
+	m_boundingMesh = MakeShared<Mesh>();
+	MeshData boundingMeshData{};
+	GeometryGenerator::MakeSphere("ModelBoundingSphere", m_boundingSphere.Radius, 20, 10, boundingMeshData);
+	m_boundingMesh->m_indexCount = (UINT)boundingMeshData.indices.size();
+	EngineUtility::CreateVertexBuffer(device, context, boundingMeshData.vertices, m_boundingMesh->vertexBuffer);
+	EngineUtility::CreateIndexBuffer(device, context, boundingMeshData.indices, m_boundingMesh->indexBuffer);
+
+	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"BoundingVertexShader.hlsl", inputElements, m_boundingVertexShader,m_boundingInputLayout);
+	EngineUtility::CreatePixelShader(device, context, L"BoundingPixelShader.hlsl", m_boundingPixelShader);
 }
 
 void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
@@ -109,9 +140,7 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 
 		auto viewRow = pEngine->GetMainCamera()->GetViewMat();
 
-		const float aspect = pEngine->GetAspectRatio();
 		Matrix projRow = Matrix();
-		float nearZ = pEngine->GetMainCamera()->GetNearZ(), farZ = pEngine->GetMainCamera()->GetFarZ();
 
 		if (g_bUsePerspectiveProjection)
 			projRow = pEngine->GetMainCamera()->GetPersMat();
@@ -155,6 +184,14 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	if (pEngine == nullptr)
 		return;
 
+	if (!pEngine->GetMainCamera()->CheckBoundingSphereInFrustom(m_boundingSphere, 
+		Matrix::CreateScale(GetScaling())
+		* Matrix::CreateRotationY(GetRotation().y)
+		* Matrix::CreateRotationX(GetRotation().x)
+		* Matrix::CreateRotationZ(GetRotation().z)
+		* Matrix::CreateTranslation(GetTranslation() + m_boundingDefaultCenter)))
+		return;
+
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);
 	context->PSSetSamplers(0, 0, m_modelDefaultSamplerState.GetAddressOf());
 	context->PSSetShader(m_modelPixelShader.Get(), 0, 0);
@@ -185,6 +222,27 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->DrawIndexed(mesh->m_indexCount, 0, 0);
 	}
 
+	{
+		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+
+		context->IASetVertexBuffers(0, 1, m_boundingMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetInputLayout(m_boundingInputLayout.Get());
+		context->IASetIndexBuffer(m_boundingMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		context->VSSetConstantBuffers(0, 1, m_modelvertexConstantBuffer.GetAddressOf());
+		context->VSSetShader(m_boundingVertexShader.Get(), 0, 0);
+
+		context->PSSetShader(m_boundingPixelShader.Get(), 0, 0);
+		context->DrawIndexed(m_boundingMesh->m_indexCount, 0, 0);
+
+		if(!g_bUseDrawWireFrame)
+			context->RSSetState(pEngine->GetSolidRasterizerState().Get());
+	}
+
+
+
 	/*
 	if (g_bUseDrawNormals)
 	{
@@ -206,7 +264,9 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 
 void Model::Update(float dt)
 {
-
+	Vector3 temp = Vector3(m_boundingDefaultRadius, 0, 0);
+	Vector3 scaled = Vector3::Transform(temp, Matrix::CreateScale(GetScaling()));
+	m_boundingSphere.Radius = scaled.Length();
 }
 
 void Model::CreateSamplerState(ComPtr<ID3D11Device>& device)

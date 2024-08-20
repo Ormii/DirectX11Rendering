@@ -1,9 +1,8 @@
 #include "pch.h"
 #include "GeometryGenerator.h"
 
-Vector<MeshData> GeometryGenerator::ReadFromFile(String basePath, String filename)
+void GeometryGenerator::ReadFromFile(String basePath, String filename, Vector<MeshData>& meshes)
 {
-    Vector<MeshData> meshes;
     if (!g_ResourceManager->GetMeshData(filename, meshes))
     {
         ModelLoader modelLoader;
@@ -39,14 +38,12 @@ Vector<MeshData> GeometryGenerator::ReadFromFile(String basePath, String filenam
 
         g_ResourceManager->SetMeshData(filename, meshes);
     }
-
-    return meshes;
 }
 
-MeshData GeometryGenerator::MakeSquare()
+void GeometryGenerator::MakeSquare(const String MeshName, MeshData& meshData)
 {
     Vector<MeshData> meshes(1);
-    if (!g_ResourceManager->GetMeshData("Square", meshes))
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
     {
         vector<Vector3> positions;
         vector<Vector3> colors;
@@ -86,16 +83,16 @@ MeshData GeometryGenerator::MakeSquare()
             0, 1, 2, 0, 2, 3,
         };
 
-        g_ResourceManager->SetMeshData("Square", meshes);
+        g_ResourceManager->SetMeshData(MeshName, meshes);
     }
 
-    return meshes[0];
+    meshData = meshes[0];
 }
 
-MeshData GeometryGenerator::MakeBox(const float scale)
+void GeometryGenerator::MakeBox(const String MeshName, MeshData& meshData, const float scale)
 {
     Vector<MeshData> meshes(1);
-    if (!g_ResourceManager->GetMeshData("Box", meshes))
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
     {
         vector<Vector3> positions;
         vector<Vector3> colors;
@@ -230,13 +227,13 @@ MeshData GeometryGenerator::MakeBox(const float scale)
         g_ResourceManager->SetMeshData("Box", meshes);
     }
 
-    return meshes[0];
+    meshData = meshes[0];
 }
 
-MeshData GeometryGenerator::MakeCylinder(const float bottomRadius, const float topRadius, float height, int numSlices)
+void GeometryGenerator::MakeCylinder(const String MeshName, const float bottomRadius, const float topRadius, float height, int numSlices, MeshData& meshData)
 {
     Vector<MeshData> meshes(1);
-    if (!g_ResourceManager->GetMeshData("Cylinder", meshes))
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
     {
         const float dTheta = -XM_2PI / float(numSlices);
 
@@ -282,16 +279,16 @@ MeshData GeometryGenerator::MakeCylinder(const float bottomRadius, const float t
             indices.push_back(i + 1);
         }
 
-        g_ResourceManager->SetMeshData("Cylinder", meshes);
+        g_ResourceManager->SetMeshData(MeshName, meshes);
     }
 
-    return meshes[0];
+    meshData = meshes[0];
 }
 
-MeshData GeometryGenerator::MakeSphere(const float radius, const int numSlices, const int numStacks)
+void GeometryGenerator::MakeSphere(const String MeshName, const float radius, const int numSlices, const int numStacks, MeshData& meshData)
 {
     Vector<MeshData> meshes(1);
-    if (!g_ResourceManager->GetMeshData("Sphere", meshes))
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
     {
         const float dTheta = -XM_2PI / float(numSlices);
         const float dPhi = -XM_PI / float(numStacks);
@@ -338,8 +335,8 @@ MeshData GeometryGenerator::MakeSphere(const float radius, const int numSlices, 
             }
         }
 
-        g_ResourceManager->SetMeshData("Sphere", meshes);
+        g_ResourceManager->SetMeshData(MeshName, meshes);
     }
 
-    return meshes[0];
+    meshData = meshes[0];
 }

@@ -52,7 +52,6 @@ protected:
 private:
     Vector<shared_ptr<Mesh>> m_meshes;
 
-
     ComPtr<ID3D11VertexShader> m_modelVertexShader;
     ComPtr<ID3D11PixelShader> m_modelPixelShader;
     ComPtr<ID3D11InputLayout> m_modelInputLayout;
@@ -70,6 +69,15 @@ private:
     NormalVertexConstantData m_normalVertexConstantData;
     ComPtr<ID3D11Buffer> m_normalVertexConstantBuffer;
     ComPtr<ID3D11Buffer> m_normalPixelConstantBuffer;
+
+private:
+    BoundingSphere           m_boundingSphere;
+    Vector3                  m_boundingDefaultCenter;
+    float                    m_boundingDefaultRadius;
+    shared_ptr<Mesh> m_boundingMesh;
+    ComPtr<ID3D11VertexShader> m_boundingVertexShader;
+    ComPtr<ID3D11PixelShader> m_boundingPixelShader;
+    ComPtr<ID3D11InputLayout> m_boundingInputLayout;
 
 private:
     ComPtr<ID3D11SamplerState> m_modelDefaultSamplerState;

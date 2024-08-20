@@ -11,8 +11,9 @@ void CubeMap::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContex
 
 	EngineUtility::CreateConstantBuffer(device, context, m_vertexConstantData, m_vertexConstantBuffer);
 
+	MeshData cubeMeshData{};
 	m_cubeMesh = std::make_shared<Mesh>();
-	MeshData cubeMeshData = GeometryGenerator::MakeSphere(50.0f, 10, 10);
+	GeometryGenerator::MakeSphere("CubeMap",50.0f, 10, 10, cubeMeshData);
 	std::reverse(cubeMeshData.indices.begin(), cubeMeshData.indices.end());
 
 	EngineUtility::CreateVertexBuffer(device, context, cubeMeshData.vertices, m_cubeMesh->vertexBuffer);
