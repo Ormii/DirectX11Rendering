@@ -2,7 +2,7 @@
 
 struct TextureInfo
 {
-	vector<uint8_t> m_image;
+	Vector<uint8_t> m_image;
 	int			m_width;
 	int			m_height;
 	int			m_channels;
@@ -26,22 +26,22 @@ struct PixelShaderInfo
 class ResourceManager
 {
 public:
-	void SetMeshData(const string& meshName, vector<MeshData>& meshDatas);
-	bool GetMeshData(const string& meshName, vector<MeshData>& meshDatas);
+	void SetMeshData(const String& meshName, Vector<MeshData>& meshDatas);
+	bool GetMeshData(const String& meshName, Vector<MeshData>& meshDatas);
 
-	void SetTexture(const string& textureName, TextureInfo& textureInfo);
-	bool GetTexture(const string& textureName, TextureInfo& textureInfo);
+	void SetTexture(const String& textureName, TextureInfo& textureInfo);
+	bool GetTexture(const String& textureName, TextureInfo& textureInfo);
 
-	void SetVsShader(const wstring& filename, VertexShaderInfo& vertexShaderInfo);
-	bool GetVsShader(const wstring& filename, VertexShaderInfo& vertexShaderInfo);
+	void SetVsShader(const WString& filename, VertexShaderInfo& vertexShaderInfo);
+	bool GetVsShader(const WString& filename, VertexShaderInfo& vertexShaderInfo);
 
-	void SetPsShader(const wstring& filename, PixelShaderInfo& pixelShaderInfo);
-	bool GetPsShader(const wstring& filename, PixelShaderInfo& pixelShaderInfo);
+	void SetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
+	bool GetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
 
 protected:
-	unordered_map<string, TextureInfo> m_texturesPool;
-	unordered_map<string, vector<MeshData>> m_meshDataPool;
-	unordered_map<wstring, VertexShaderInfo> m_vsPool;
-	unordered_map<wstring, PixelShaderInfo> m_psPool;
+	HashMap<String, TextureInfo> m_texturesPool;
+	HashMap<String, Vector<MeshData>> m_meshDataPool;
+	HashMap<WString, VertexShaderInfo> m_vsPool;
+	HashMap<WString, PixelShaderInfo> m_psPool;
 };
 

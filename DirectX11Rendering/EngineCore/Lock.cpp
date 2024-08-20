@@ -86,5 +86,4 @@ void Lock::ReadUnLock()
 	uint32 prevReadThreadCount = static_cast<uint32>(LockFlag.fetch_sub(1));
 	if ((prevReadThreadCount & LOCK_MASK_READ_THREAD_COUNT) == 0)
 		CRASH("DUPLICATE READ UNLOCK");
-
 }

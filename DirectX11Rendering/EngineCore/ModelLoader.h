@@ -9,7 +9,7 @@
 class ModelLoader
 {
 public:
-    void Load(std::string basePath, std::string filename);
+    void Load(String basePath, String filename);
 
     void ProcessNode(aiNode* node, const aiScene* scene,
         DirectX::SimpleMath::Matrix tr);
@@ -17,7 +17,7 @@ public:
     MeshData ProcessMesh(aiMesh* mesh, const aiScene* scene);
 
 public:
-    std::string basePath;
-    std::vector<MeshData> meshes;
+    String basePath;
+    Vector<MeshData> meshes;
 };
 

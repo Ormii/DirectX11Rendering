@@ -71,7 +71,7 @@ void CheckResult(HRESULT hr, ID3DBlob* errorBlob) {
     }
 }
 
-void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename, const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
+void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements, ComPtr<ID3D11VertexShader>& vertexShader, ComPtr<ID3D11InputLayout>& inputLayout)
 {
     ComPtr<ID3DBlob> errorBlob;
 
@@ -107,7 +107,7 @@ void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& devic
     inputLayout = vsInfo.m_inputLayout;
 }
 
-void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader)
+void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11PixelShader>& pixelShader)
 {
     ComPtr<ID3DBlob> errorBlob;
 
@@ -135,7 +135,7 @@ void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
 
 }
 
-void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer)
+void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer)
 {
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -152,7 +152,7 @@ void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
     device->CreateBuffer(&bufferDesc, &indexBufferData, &m_indexBuffer);
 }
 
-void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const std::string filename,
+void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String filename,
     ComPtr<ID3D11Texture2D>& texture,
     ComPtr<ID3D11ShaderResourceView>& textureResourceView)
 {

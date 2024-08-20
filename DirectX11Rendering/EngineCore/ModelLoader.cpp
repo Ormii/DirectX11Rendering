@@ -5,14 +5,14 @@
 
 using namespace std::filesystem;
 
-void ModelLoader::Load(std::string basePath, std::string filename)
+void ModelLoader::Load(String basePath, String filename)
 {
     this->basePath = basePath;
 
     Assimp::Importer importer;
 
     const aiScene* pScene = importer.ReadFile(
-        this->basePath + filename,
+        string(this->basePath + filename),
         aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
 
     if (!pScene) {
@@ -55,8 +55,8 @@ void ModelLoader::ProcessNode(aiNode* node, const aiScene* scene, DirectX::Simpl
 MeshData ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
 {
     // Data to fill
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
+    Vector<Vertex> vertices;
+    Vector<uint32_t> indices;
 
     // Walk through each of the mesh's vertices
     for (UINT i = 0; i < mesh->mNumVertices; i++) {
@@ -97,9 +97,9 @@ MeshData ModelLoader::ProcessMesh(aiMesh* mesh, const aiScene* scene)
             aiString filepath;
             material->GetTexture(aiTextureType_DIFFUSE, 0, &filepath);
            
-            std::string fullPath =
+            String fullPath =
                 this->basePath +
-                std::string(std::filesystem::path(filepath.C_Str())
+                String(std::filesystem::path(filepath.C_Str())
                     .filename()
                     .string());
 

@@ -27,7 +27,7 @@ private:
 	void LoadResources();
 
 private:
-	vector<ComPtr<ID3D11CommandList>> m_commandLists;
+	Vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
 	void UpdateMeshes(ThreadParam param);
 	void UpdateCubeMap(ThreadParam param);
@@ -44,16 +44,16 @@ public:
 	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }
 
 	shared_ptr<Light>& GetDirectionalLight(){ return m_directionalLight; }
-	vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
-	vector<std::shared_ptr<Light>>& GetSpotLights() { return m_spotLights; }
+	Vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
+	Vector<std::shared_ptr<Light>>& GetSpotLights() { return m_spotLights; }
 private:
 
 
-	vector<std::shared_ptr<Model>> m_models;
+	Vector<std::shared_ptr<Model>> m_models;
 
 	shared_ptr<Light> m_directionalLight;
-	vector<std::shared_ptr<Light>> m_pointLights;
-	vector<std::shared_ptr<Light>> m_spotLights;
+	Vector<std::shared_ptr<Light>> m_pointLights;
+	Vector<std::shared_ptr<Light>> m_spotLights;
 	
 	std::shared_ptr<Camera> m_mainCamera;
 	std::shared_ptr<CubeMap> m_cubeMap;
@@ -63,7 +63,7 @@ private:
 	std::weak_ptr<Light> m_targetLight;
 
 private:
-	vector<std::shared_ptr<ImageFilter>> m_imageFilters;
+	Vector<std::shared_ptr<ImageFilter>> m_imageFilters;
 
 	float m_threshold = 0.1f;
 	float m_strength = 0.1f;

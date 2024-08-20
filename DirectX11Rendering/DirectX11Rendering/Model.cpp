@@ -2,13 +2,13 @@
 #include "Model.h"
 #include "GeometryGenerator.h"
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const std::string& basePath, const std::string& filename)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename)
 {
-	vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
+	Vector<MeshData> meshes = GeometryGenerator::ReadFromFile(basePath, filename);
 	Initialize(device, context, meshes);
 }
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const std::vector<MeshData>& meshes)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes)
 {
 	m_modelVertexConstantData.model = Matrix();
 	m_modelVertexConstantData.view = Matrix();
@@ -21,7 +21,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	for (const auto& meshData : meshes)
 	{
-		auto newmesh = make_shared<Mesh>();
+		auto newmesh = MakeShared<Mesh>();
 		EngineUtility::CreateVertexBuffer(device, context, meshData.vertices, newmesh->vertexBuffer);
 		EngineUtility::CreateIndexBuffer(device, context, meshData.indices, newmesh->indexBuffer);
 

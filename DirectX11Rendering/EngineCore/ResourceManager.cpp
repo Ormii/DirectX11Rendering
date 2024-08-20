@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "ResourceManager.h"
 
-void ResourceManager::SetMeshData(const string& meshName, vector<MeshData>& meshDatas)
+void ResourceManager::SetMeshData(const String& meshName, Vector<MeshData>& meshDatas)
 {
 	if (m_meshDataPool.find(meshName) != m_meshDataPool.end())
 		return;
@@ -9,7 +9,7 @@ void ResourceManager::SetMeshData(const string& meshName, vector<MeshData>& mesh
 	m_meshDataPool.insert({ meshName, meshDatas });
 }
 
-bool ResourceManager::GetMeshData(const string& meshName, vector<MeshData>& meshDatas)
+bool ResourceManager::GetMeshData(const String& meshName, Vector<MeshData>& meshDatas)
 {
 	if (m_meshDataPool.find(meshName) == m_meshDataPool.end())
 		return false;
@@ -19,7 +19,7 @@ bool ResourceManager::GetMeshData(const string& meshName, vector<MeshData>& mesh
 	return true;
 }
 
-void ResourceManager::SetTexture(const string& textureName, TextureInfo& textureInfo)
+void ResourceManager::SetTexture(const String& textureName, TextureInfo& textureInfo)
 {
 	if (m_texturesPool.find(textureName) != m_texturesPool.end())
 		return;
@@ -27,7 +27,7 @@ void ResourceManager::SetTexture(const string& textureName, TextureInfo& texture
 	m_texturesPool.insert({ textureName, textureInfo });
 }
 
-bool ResourceManager::GetTexture(const string& textureName, TextureInfo& textureInfo)
+bool ResourceManager::GetTexture(const String& textureName, TextureInfo& textureInfo)
 {
 	if (m_texturesPool.find(textureName) == m_texturesPool.end())
 		return false;
@@ -37,7 +37,7 @@ bool ResourceManager::GetTexture(const string& textureName, TextureInfo& texture
 	return true;
 }
 
-void ResourceManager::SetVsShader(const wstring& filename, VertexShaderInfo& vertexShaderInfo)
+void ResourceManager::SetVsShader(const WString& filename, VertexShaderInfo& vertexShaderInfo)
 {
 	if (m_vsPool.find(filename) != m_vsPool.end())
 		return;
@@ -45,7 +45,7 @@ void ResourceManager::SetVsShader(const wstring& filename, VertexShaderInfo& ver
 	m_vsPool.insert({ filename, vertexShaderInfo });
 }
 
-bool ResourceManager::GetVsShader(const wstring& filename, VertexShaderInfo& vertexShaderInfo)
+bool ResourceManager::GetVsShader(const WString& filename, VertexShaderInfo& vertexShaderInfo)
 {
 	if (m_vsPool.find(filename) == m_vsPool.end())
 		return false;
@@ -54,7 +54,7 @@ bool ResourceManager::GetVsShader(const wstring& filename, VertexShaderInfo& ver
 	return true;
 }
 
-void ResourceManager::SetPsShader(const wstring& filename, PixelShaderInfo& pixelShaderInfo)
+void ResourceManager::SetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo)
 {
 	if (m_psPool.find(filename) != m_psPool.end())
 		return;
@@ -62,7 +62,7 @@ void ResourceManager::SetPsShader(const wstring& filename, PixelShaderInfo& pixe
 	m_psPool.insert({ filename, pixelShaderInfo });
 }
 
-bool ResourceManager::GetPsShader(const wstring& filename, PixelShaderInfo& pixelShaderInfo)
+bool ResourceManager::GetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo)
 {
 	if (m_psPool.find(filename) == m_psPool.end())
 		return false;

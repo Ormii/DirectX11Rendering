@@ -8,16 +8,16 @@ public:
 		ComPtr<ID3D11Texture2D>& depthStencilBuffer, ComPtr<ID3D11DepthStencilView>& depthStencilView, 
 		ComPtr<ID3D11DepthStencilState>& depthStencilState, int32 screenWidth, int32 screenHeight, UINT numQualityLevels);
 
-	static void CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename,
+	static void CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename,
 		const vector<D3D11_INPUT_ELEMENT_DESC>& inputElements,
 		ComPtr<ID3D11VertexShader>& vertexShader,
 		ComPtr<ID3D11InputLayout>& inputLayout);
 
-	static void CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const wstring& filename, ComPtr<ID3D11PixelShader>& pixelShader);
-	static void CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer);
+	static void CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11PixelShader>& pixelShader);
+	static void CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer);
 
 	template <typename T_VERTEX>
-	static void CreateVertexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const vector<T_VERTEX>& vertices, ComPtr<ID3D11Buffer>& vertexBuffer)
+	static void CreateVertexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<T_VERTEX>& vertices, ComPtr<ID3D11Buffer>& vertexBuffer)
 	{
 		D3D11_BUFFER_DESC bufferDesc;
 		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
@@ -65,7 +65,7 @@ public:
 		context->Unmap(buffer.Get(), NULL);
 	}
 
-	static void CreateTexture(ComPtr<ID3D11Device>& device, const std::string filename,
+	static void CreateTexture(ComPtr<ID3D11Device>& device, const String filename,
 		ComPtr<ID3D11Texture2D>& texture,
 		ComPtr<ID3D11ShaderResourceView>& textureResourceView);
 

@@ -9,7 +9,6 @@ public:
 		m_maxThreadCount = 1;
 		if (m_maxThreadCount < (uint32)std::thread::hardware_concurrency)
 			m_maxThreadCount = (uint32)std::thread::hardware_concurrency;
-
 	}
 
 	~ThreadManager()
@@ -45,7 +44,7 @@ private:
 	uint32 m_maxThreadCount;
 
 private:
-	vector<thread> m_threads;
+	Vector<thread> m_threads;
 	mutex		   m_lock;
 };
 

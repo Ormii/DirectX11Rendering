@@ -1,8 +1,9 @@
 #pragma once
+#include "Container.h"
 
 struct MeshData
 {
-    std::vector<Vertex> vertices;
-    std::vector<uint32> indices;
-    std::string textureFilename;
+    Vector<Vertex> vertices;
+    Vector<uint32> indices;
+    String textureFilename;
 };

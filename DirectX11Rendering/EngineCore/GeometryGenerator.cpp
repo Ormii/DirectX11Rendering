@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "GeometryGenerator.h"
 
-vector<MeshData> GeometryGenerator::ReadFromFile(std::string basePath, std::string filename)
+Vector<MeshData> GeometryGenerator::ReadFromFile(String basePath, String filename)
 {
-    vector<MeshData> meshes;
+    Vector<MeshData> meshes;
     if (!g_ResourceManager->GetMeshData(filename, meshes))
     {
         ModelLoader modelLoader;
@@ -45,7 +45,7 @@ vector<MeshData> GeometryGenerator::ReadFromFile(std::string basePath, std::stri
 
 MeshData GeometryGenerator::MakeSquare()
 {
-    vector<MeshData> meshes(1);
+    Vector<MeshData> meshes(1);
     if (!g_ResourceManager->GetMeshData("Square", meshes))
     {
         vector<Vector3> positions;
@@ -94,7 +94,7 @@ MeshData GeometryGenerator::MakeSquare()
 
 MeshData GeometryGenerator::MakeBox(const float scale)
 {
-    vector<MeshData> meshes(1);
+    Vector<MeshData> meshes(1);
     if (!g_ResourceManager->GetMeshData("Box", meshes))
     {
         vector<Vector3> positions;
@@ -235,12 +235,12 @@ MeshData GeometryGenerator::MakeBox(const float scale)
 
 MeshData GeometryGenerator::MakeCylinder(const float bottomRadius, const float topRadius, float height, int numSlices)
 {
-    vector<MeshData> meshes(1);
+    Vector<MeshData> meshes(1);
     if (!g_ResourceManager->GetMeshData("Cylinder", meshes))
     {
         const float dTheta = -XM_2PI / float(numSlices);
 
-        vector<Vertex>& vertices = meshes[0].vertices;
+        Vector<Vertex>& vertices = meshes[0].vertices;
 
         // 옆면의 바닥 버텍스들 (인덱스 0 이상 numSlices 미만)
         for (int i = 0; i <= numSlices; i++) {
@@ -269,7 +269,7 @@ MeshData GeometryGenerator::MakeCylinder(const float bottomRadius, const float t
             vertices.push_back(v);
         }
 
-        vector<uint32_t>& indices = meshes[0].indices;
+        Vector<uint32_t>& indices = meshes[0].indices;
 
         for (int i = 0; i < numSlices; i++)
         {
@@ -290,13 +290,13 @@ MeshData GeometryGenerator::MakeCylinder(const float bottomRadius, const float t
 
 MeshData GeometryGenerator::MakeSphere(const float radius, const int numSlices, const int numStacks)
 {
-    vector<MeshData> meshes(1);
+    Vector<MeshData> meshes(1);
     if (!g_ResourceManager->GetMeshData("Sphere", meshes))
     {
         const float dTheta = -XM_2PI / float(numSlices);
         const float dPhi = -XM_PI / float(numStacks);
 
-        vector<Vertex>& vertices = meshes[0].vertices;
+        Vector<Vertex>& vertices = meshes[0].vertices;
 
         for (int j = 0; j <= numStacks; j++) {
 
@@ -320,7 +320,7 @@ MeshData GeometryGenerator::MakeSphere(const float radius, const int numSlices, 
             }
         }
 
-        vector<uint32_t>& indices = meshes[0].indices;
+        Vector<uint32_t>& indices = meshes[0].indices;
 
         for (int j = 0; j < numStacks; j++) {
 

@@ -23,21 +23,22 @@ bool Engine::Initialize()
 	if(!EngineBase::Initialize())
 		return false;
 
-	m_mainCamera = std::make_shared<Camera>();
+	m_mainCamera = MakeShared<Camera>();
 	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -30.0);
 	m_mainCamera->GetRotation() = Vector3(0.0f, 3.14f, 0.0f);
 
-	m_cubeMap = make_shared<CubeMap>();
+	m_cubeMap = MakeShared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
 
 
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
-		for (int j = 0; j < 10; ++j)
+		for (int j = 0; j < 5; ++j)
 		{
-			auto zelda = make_shared<Model>();
+			auto zelda = MakeShared<Model>();
+			auto s = sizeof(*zelda);
 			zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
-			zelda->GetTranslation() = Vector3(-1 + i, 0.0f, -1 + j);
+			zelda->GetTranslation() = Vector3(-1.0f + i, 0.0f, -1.0f + j);
 			zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
 			zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
 			zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
@@ -45,8 +46,8 @@ bool Engine::Initialize()
 		}
 	}
 
-	auto floor = make_shared<Model>();
-	floor->Initialize(m_device, m_context, vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
+	auto floor = MakeShared<Model>();
+	floor->Initialize(m_device, m_context, Vector<MeshData>{GeometryGenerator::MakeBox(1.0f)});
 	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
 	floor->GetRotation() = Vector3(3.14f / 2, 0.0f, 0.0f);
 	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);
@@ -55,7 +56,7 @@ bool Engine::Initialize()
 	m_models.push_back(floor);
 
 	LightData lightData{};
-	m_directionalLight = std::make_shared<Light>(lightData);
+	m_directionalLight = MakeShared<Light>(lightData);
 	m_directionalLight->GetDirection() = Vector3(-1.0f, -1.0f, -1.0);
 	m_directionalLight->GetDirection().Normalize();
 	m_directionalLight->GetLightData().strength = Vector3(0.5f);
@@ -63,13 +64,13 @@ bool Engine::Initialize()
 	for (int32 i = 0; i < MAX_LIGHTS; ++i)
 	{
 		LightData pointLightData{};
-		m_pointLights.push_back(std::make_shared<Light>(pointLightData));
+		m_pointLights.push_back(MakeShared<Light>(pointLightData));
 	}
 
 	for (int32 i = 0; i < MAX_LIGHTS; ++i)
 	{
 		LightData spotLightData{};
-		m_spotLights.push_back(std::make_shared<Light>(spotLightData));
+		m_spotLights.push_back(MakeShared<Light>(spotLightData));
 	}
 
 	m_pointLights[0]->GetLightData().strength = Vector3(1.0f);
@@ -87,35 +88,35 @@ bool Engine::Initialize()
 	m_targetLight = m_spotLights[0];
 
 
-	auto saveImageFilter = make_shared<ImageFilter>();
-	saveImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", m_screenWidth, m_screenHeight);
+	auto saveImageFilter = MakeShared<ImageFilter>();
+	saveImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", (float)m_screenWidth, (float)m_screenHeight);
 	saveImageFilter->GetIsNotUseThreshold() = true;
 	saveImageFilter->SetShaderResources({ m_shaderResourceView });
 	saveImageFilter->Update(m_device, m_context, 0);
 	m_imageFilters.push_back(saveImageFilter);
 
-	auto copyImageFilter = make_shared<ImageFilter>();
-	copyImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", m_screenWidth, m_screenHeight);
+	auto copyImageFilter = MakeShared<ImageFilter>();
+	copyImageFilter->Initialize(m_device, m_context, L"Copy", L"Copy", (float)m_screenWidth, (float)m_screenHeight);
 	copyImageFilter->SetShaderResources({ m_shaderResourceView });
 	m_imageFilters.push_back(copyImageFilter);
 
 	for (int i = 0; i < 10; ++i)
 	{
-		auto blurXImgFilter = make_shared<ImageFilter>();
-		blurXImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurX", m_screenWidth / 4, m_screenHeight / 4);
+		auto blurXImgFilter = MakeShared<ImageFilter>();
+		blurXImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurX", m_screenWidth / 4.0f, m_screenHeight / 4.0f);
 		blurXImgFilter->SetShaderResources({ m_imageFilters.back()->GetShaderResourceView() });
 
 		m_imageFilters.push_back(blurXImgFilter);
 
-		auto blurYImgFilter = make_shared<ImageFilter>();
-		blurYImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurY", m_screenWidth / 4, m_screenHeight / 4);
+		auto blurYImgFilter = MakeShared<ImageFilter>();
+		blurYImgFilter->Initialize(m_device, m_context, L"Blur", L"BlurY", m_screenWidth / 4.0f, m_screenHeight / 4.0f);
 		blurYImgFilter->SetShaderResources({ m_imageFilters.back()->GetShaderResourceView() });
 
 		m_imageFilters.push_back(blurYImgFilter);
 	}
 
-	auto mergeImageFilter = make_shared<ImageFilter>();
-	mergeImageFilter->Initialize(m_device, m_context, L"Merge", L"Merge", m_screenWidth, m_screenHeight);
+	auto mergeImageFilter = MakeShared<ImageFilter>();
+	mergeImageFilter->Initialize(m_device, m_context, L"Merge", L"Merge", (float)m_screenWidth, (float)m_screenHeight);
 	mergeImageFilter->SetShaderResources({ m_imageFilters.front()->GetShaderResourceView(),m_imageFilters.back()->GetShaderResourceView() });
 	mergeImageFilter->SetRenderTargets({ m_renderTargetView });
 
@@ -161,7 +162,7 @@ void Engine::Update(float dt)
 	}
 
 	uint32 threadId = 1;
-	uint32 step = (m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
+	uint32 step = ((uint32)m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
 	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
 	{
 		uint32 startIdx = i;
@@ -221,7 +222,7 @@ void Engine::Render()
 		1.0f, 0);
 
 	uint32 threadId = 1;
-	uint32 step = (m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
+	uint32 step = ((uint32)m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
 	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
 	{
 		uint32 startIdx = i;
@@ -281,7 +282,7 @@ void Engine::LoadResources()
 
 void Engine::UpdateMeshes(ThreadParam param)
 {
-	for (int32 i = param.startIdx; i < param.endIdx; ++i)
+	for (uint32 i = param.startIdx; i < param.endIdx; ++i)
 	{
 		m_models[i]->Update(param.deltatime);
 		m_models[i]->UpdateConstantBuffers(m_device, m_context);

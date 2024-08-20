@@ -21,11 +21,11 @@ struct ModelPixelConstantData {
 class Model : public Object
 {
 public:
-    void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const std::string& basePath,
-        const std::string& filename);
+    void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath,
+        const String& filename);
 
     void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context,
-        const std::vector<MeshData>& meshes);
+        const Vector<MeshData>& meshes);
 
     void UpdateConstantBuffers(ComPtr<ID3D11Device>& device,
         ComPtr<ID3D11DeviceContext>& context);
@@ -50,7 +50,7 @@ protected:
 
 
 private:
-    std::vector<shared_ptr<Mesh>> m_meshes;
+    Vector<shared_ptr<Mesh>> m_meshes;
 
 
     ComPtr<ID3D11VertexShader> m_modelVertexShader;
