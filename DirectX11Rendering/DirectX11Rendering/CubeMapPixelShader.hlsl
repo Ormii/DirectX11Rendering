@@ -4,7 +4,8 @@ SamplerState g_sampler : register(s0);
 struct CubeMapPixelInput
 {
     float4 posProj : SV_POSITION;
-    float3 posModel : POSITION;
+    float3 posModel : POSITION0;
+    float3 posWorld : POSITION1;
 };
 
 struct CubeMapPixelOutput

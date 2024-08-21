@@ -91,3 +91,4 @@ protected:
 extern EngineBase* g_EngineBase;
 extern ResourceManager* g_ResourceManager;
 extern MemoryManager* g_MemoryManager;
+extern ThreadManager* g_ThreadManager;

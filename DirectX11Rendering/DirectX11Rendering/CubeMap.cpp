@@ -43,7 +43,12 @@ void CubeMap::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContex
 	device->CreateSamplerState(&sampleDesc, m_samplerState.GetAddressOf());
 }
 
-void CubeMap::Update(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, float dt)
+void CubeMap::Update(float dt)
+{
+
+}
+
+void CubeMap::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
 {
 	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
 	if (pEngine == nullptr)
@@ -56,6 +61,7 @@ void CubeMap::Update(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& 
 		projMat = pEngine->GetMainCamera()->GetOrthMat();
 
 
+	m_vertexConstantData.model = Matrix::CreateScale(GetScaling())* Matrix::CreateTranslation(pEngine->GetMainCamera()->GetTranslation()).Transpose();
 	m_vertexConstantData.viewProj = projMat.Transpose() * pEngine->GetMainCamera()->GetViewMat().Transpose();
 
 	EngineUtility::UpdateBuffer(device, context, m_vertexConstantData, m_vertexConstantBuffer);

@@ -5,6 +5,7 @@
 EngineBase* g_EngineBase = nullptr;
 ResourceManager* g_ResourceManager = nullptr;
 MemoryManager* g_MemoryManager = nullptr;
+ThreadManager* g_ThreadManager = nullptr;
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -19,6 +20,7 @@ EngineBase::EngineBase()
 	g_EngineBase = this;
     g_MemoryManager = new MemoryManager();
     g_ResourceManager = new ResourceManager();
+    g_ThreadManager = new ThreadManager();
 }
 
 EngineBase::~EngineBase()

@@ -175,6 +175,7 @@
     <ClInclude Include="Allocator.h" />
     <ClInclude Include="ThreadInfo.h" />
     <ClInclude Include="ThreadManager.h" />
+    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +196,7 @@
     <ClCompile Include="Allocator.cpp" />
     <ClCompile Include="ThreadInfo.cpp" />
     <ClCompile Include="ThreadManager.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

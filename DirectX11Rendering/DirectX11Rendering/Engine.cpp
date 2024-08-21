@@ -5,12 +5,10 @@ bool g_bUsePerspectiveProjection = true;
 bool g_bUseDrawNormals = false;
 bool g_bUseDrawWireFrame = false;
 
-ThreadManager<Engine>* g_ThreadManager = nullptr;
-
 
 Engine::Engine()
 {
-	g_ThreadManager = new ThreadManager<Engine>();
+
 }
 
 Engine::~Engine()
@@ -41,7 +39,7 @@ bool Engine::Initialize()
 	
 	m_cubeMap = MakeShared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
-
+	m_cubeMap->GetScaling() = Vector3(5.0f, 5.0f, 5.0f);
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -57,16 +55,16 @@ bool Engine::Initialize()
 		}
 	}
 
-	auto floor = MakeShared<Model>();
-	MeshData boxMeshData{};
-	GeometryGenerator::MakeBox("Floor", boxMeshData, 1.0f);
-	floor->Initialize(m_device, m_context, Vector<MeshData>{boxMeshData});
-	floor->GetTranslation() = Vector3(0.0f, -3.0f, 0.0f);
-	floor->GetRotation() = Vector3(3.14f / 2, 0.0f, 0.0f);
-	floor->GetScaling() = Vector3(10.0f, 10.0f, 1.0f);
-	floor->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
-	floor->SetSpecularResView(m_cubeMap->GetSpecularResView());
-	m_models.push_back(floor);
+	{
+		auto floor = MakeShared<Model>();
+		MeshData gridMeshData{};
+		GeometryGenerator::MakeSquareGrid("FloorGrid", 30, 30, gridMeshData);
+		floor->Initialize(m_device, m_context, Vector<MeshData>{gridMeshData});
+		floor->GetTranslation() = Vector3(0.0f, -0.5f, 0.0f);
+		floor->GetRotation() = Vector3(3.14/2, 0.0f, 0.0f);
+		floor->GetScaling() = Vector3(30.0f, 30.0f, 1.0f);
+		m_models.push_back(floor);
+	}
 
 	LightData lightData{};
 	m_directionalLight = MakeShared<Light>(lightData);
@@ -169,25 +167,25 @@ void Engine::Update(float dt)
 	m_directionalLight->Update(dt);
 
 	for (auto& light : m_pointLights)
-	{
 		light->Update(dt);
-	}
 
 	for (auto& light : m_spotLights)
-	{
 		light->Update(dt);
-	}
-
+	
 	uint32 threadId = 1;
 	uint32 step = ((uint32)m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
 	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
 	{
 		uint32 startIdx = i;
 		uint32 endIdx = std::min(i + step,(uint32)m_models.size());
-		g_ThreadManager->Launch(&Engine::UpdateMeshes, this, ThreadParam{ threadId, threadId, dt,startIdx, endIdx });
+		auto boundFunc = std::bind(&Engine::UpdateMeshes, this, std::placeholders::_1, std::placeholders::_2);
+		g_ThreadManager->Launch(boundFunc, ThreadParam{ threadId, threadId, dt,startIdx, endIdx });
 	}
 
-	g_ThreadManager->Launch(&Engine::UpdateCubeMap, this, ThreadParam{ threadId, threadId, dt });
+	{
+		auto boundFunc = std::bind(&Engine::UpdateCubeMap, this, std::placeholders::_1, std::placeholders::_2);
+		g_ThreadManager->Launch(boundFunc, ThreadParam{threadId, threadId, dt});
+	}
 
 	g_ThreadManager->Join();
 
@@ -249,11 +247,14 @@ void Engine::Render()
 	{
 		uint32 startIdx = i;
 		uint32 endIdx = std::min(i + step, (uint32)m_models.size());
-		g_ThreadManager->Launch(&Engine::RenderMeshes, this, ThreadParam{ threadId, threadId, 0,startIdx, endIdx });
+
+		auto boundFunc = std::bind(&Engine::RenderMeshes, this, std::placeholders::_1, std::placeholders::_2);
+		g_ThreadManager->Launch(boundFunc,ThreadParam{ threadId, threadId, 0,startIdx, endIdx });
 	}
 
 	{
-		g_ThreadManager->Launch(&Engine::RenderCubMap, this, ThreadParam{ threadId, threadId, 0,0, 0 });
+		auto boundFunc = std::bind(&Engine::RenderCubMap, this, std::placeholders::_1, std::placeholders::_2);
+		g_ThreadManager->Launch(boundFunc, ThreadParam{ threadId, threadId, 0,0, 0 });
 		threadId++;
 	}
 
@@ -318,22 +319,29 @@ void Engine::LoadResources()
 
 }
 
-void Engine::UpdateMeshes(ThreadParam param)
+bool Engine::UpdateMeshes(ThreadParam param, promise<bool>&& pm)
 {
 	for (uint32 i = param.startIdx; i < param.endIdx; ++i)
 	{
 		m_models[i]->Update(param.deltatime);
 		m_models[i]->UpdateConstantBuffers(m_device, m_context);
 	}
+
+	pm.set_value(true);
+	return true;
 }
 
-void Engine::UpdateCubeMap(ThreadParam param)
+bool Engine::UpdateCubeMap(ThreadParam param, promise<bool>&& pm)
 {
 	LthreadID = param.threadID;
-	m_cubeMap->Update(m_device, m_context, param.deltatime);
+	m_cubeMap->Update(param.deltatime);
+	m_cubeMap->UpdateConstantBuffers(m_device, m_context);
+
+	pm.set_value(true);
+	return true;
 }
 
-void Engine::RenderMeshes(ThreadParam param)
+bool Engine::RenderMeshes(ThreadParam param, promise<bool>&& pm)
 {
 	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
@@ -343,7 +351,6 @@ void Engine::RenderMeshes(ThreadParam param)
 	if (FAILED(hr))
 	{
 		std::cerr << "Error: " << "Failed to create deferred context" << " (HRESULT: " << std::hex << hr << ")" << std::endl;
-
 	}
 	
 	m_deviceLock.ReadUnLock();
@@ -375,9 +382,12 @@ void Engine::RenderMeshes(ThreadParam param)
 
 	m_commandLists[param.commandListIdx] = commandList;
 	m_commandListLock.WriteUnlock();
+
+	pm.set_value(true);
+	return true;
 }
 
-void Engine::RenderCubMap(ThreadParam param)
+bool Engine::RenderCubMap(ThreadParam param, promise<bool>&& pm)
 {
 	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
@@ -410,4 +420,7 @@ void Engine::RenderCubMap(ThreadParam param)
 
 	m_commandLists[param.commandListIdx] = commandList;
 	m_commandListLock.WriteUnlock();
+
+	pm.set_value(true);
+	return true;
 }

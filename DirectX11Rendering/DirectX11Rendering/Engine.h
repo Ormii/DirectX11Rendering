@@ -30,11 +30,11 @@ private:
 private:
 	Vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
-	void UpdateMeshes(ThreadParam param);
-	void UpdateCubeMap(ThreadParam param);
+	bool UpdateMeshes(ThreadParam param, promise<bool>&&);
+	bool UpdateCubeMap(ThreadParam param, promise<bool>&&);
 
-	void RenderMeshes(ThreadParam param);
-	void RenderCubMap(ThreadParam param);
+	bool RenderMeshes(ThreadParam param, promise<bool>&&);
+	bool RenderCubMap(ThreadParam param, promise<bool>&&);
 
 	Lock m_deviceLock;
 	Lock m_contextLock;
@@ -73,5 +73,3 @@ private:
 	float m_threshold = 0.1f;
 	float m_strength = 0.1f;
 };
-
-extern ThreadManager<Engine>* g_ThreadManager;

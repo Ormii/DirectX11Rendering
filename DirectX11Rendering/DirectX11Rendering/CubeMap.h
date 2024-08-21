@@ -2,17 +2,18 @@
 
 struct CubeMapConstantBufferData
 {
+	Matrix model;
 	Matrix viewProj;
 };
 
-class CubeMap
+class CubeMap : public Object
 {
 public:
 	void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context
 		, const wchar_t* originFilename, const wchar_t* diffuseFilename, const wchar_t* specularFilename);
 
-
-	void Update(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, float dt);
+	virtual void Update(float dt) override;
+	void UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context);
 	
 	void Render(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context);
 

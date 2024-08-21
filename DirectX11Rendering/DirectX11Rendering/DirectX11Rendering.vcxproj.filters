@@ -31,9 +31,6 @@
     <Filter Include="Object\Model\Mesh">
       <UniqueIdentifier>{09c29bbf-9da8-49df-8e9d-136a3198e68f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="CubeMap">
-      <UniqueIdentifier>{42de11a4-0b68-4932-b4d8-733c09767d69}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader\CubeMap">
       <UniqueIdentifier>{034c4306-5507-4763-974d-0707d6581a1d}</UniqueIdentifier>
     </Filter>
@@ -48,6 +45,9 @@
     </Filter>
     <Filter Include="Shader\Bounding">
       <UniqueIdentifier>{17fbea48-63a0-4e8f-b400-e173f8cf67cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Object\CubeMap">
+      <UniqueIdentifier>{42de11a4-0b68-4932-b4d8-733c09767d69}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -73,7 +73,7 @@
       <Filter>Object\Model</Filter>
     </ClCompile>
     <ClCompile Include="CubeMap.cpp">
-      <Filter>CubeMap</Filter>
+      <Filter>Object\CubeMap</Filter>
     </ClCompile>
     <ClCompile Include="ImageFilter.cpp">
       <Filter>Object\ImageFilter</Filter>
@@ -105,7 +105,7 @@
       <Filter>Object\Model\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="CubeMap.h">
-      <Filter>CubeMap</Filter>
+      <Filter>Object\CubeMap</Filter>
     </ClInclude>
     <ClInclude Include="ImageFilter.h">
       <Filter>Object\ImageFilter</Filter>

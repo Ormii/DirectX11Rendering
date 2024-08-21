@@ -285,6 +285,49 @@ void GeometryGenerator::MakeCylinder(const String MeshName, const float bottomRa
     meshData = meshes[0];
 }
 
+void GeometryGenerator::MakeSquareGrid(const String MeshName, const int numSlices, const int numStacks, MeshData& meshData, const float scale, const Vector2 texScale)
+{
+    Vector<MeshData> meshes(1);
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
+    {
+        float dx = 2.0f / numSlices;
+        float dy = 2.0f / numStacks;
+
+        float y = 1.0f;
+        for (int row = 0; row < numStacks + 1; row++)
+        {
+            float x = -1.0f;
+            for (int col = 0; col < numSlices + 1; col++)
+            {
+                Vertex v;
+                v.position = Vector3(x, y, 0.0f) * scale;
+                v.normal = Vector3(0, 0, -1.0f);
+                v.texcoord = Vector2(x + 1.0f, y + 1.0f)*0.5f * texScale;
+
+                meshes[0].vertices.push_back(v);
+                x += dx;
+            }
+            y -= dy;
+        }
+
+        for (int row = 0; row < numStacks; row++)
+        {
+            for (int col = 0; col < numSlices; col++)
+            {
+                meshes[0].indices.push_back((numSlices+1)*row + col);
+                meshes[0].indices.push_back((numSlices+1)*row + (col + 1));
+                meshes[0].indices.push_back((numSlices+1) * (row + 1) + col);
+
+                meshes[0].indices.push_back((numSlices+1)* (row+1) + col);
+                meshes[0].indices.push_back((numSlices+1) *row + (col + 1));
+                meshes[0].indices.push_back((numSlices+1)* (row + 1) + (col + 1));
+            }
+        }
+    }
+
+    meshData = meshes[0];
+}
+
 void GeometryGenerator::MakeFrustom(const String MeshName, const float aspect, const float fovY, const float nearZ, const float farZ, MeshData& meshData)
 {
     Vector<MeshData> meshes(1);

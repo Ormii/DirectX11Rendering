@@ -84,6 +84,9 @@
     <ClInclude Include="Container.h">
       <Filter>Memory\Container</Filter>
     </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -121,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="MemoryManager.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadPool.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

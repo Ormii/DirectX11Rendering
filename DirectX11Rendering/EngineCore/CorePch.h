@@ -12,11 +12,14 @@
 #include <wrl.h>
 #include <intsafe.h>
 #include <thread>
+#include <future>
 #include <mutex>
 #include <functional>
 #include <filesystem>
 #include <cstring>
 #include <unordered_map>
+#include <initializer_list>
+#include <tuple>
 
 #include <vector>
 
