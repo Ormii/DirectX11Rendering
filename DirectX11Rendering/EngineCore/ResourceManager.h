@@ -23,6 +23,11 @@ struct PixelShaderInfo
 	ComPtr<ID3DBlob> m_shaderBlob;
 };
 
+struct SamplerStateInfo
+{
+	ComPtr<ID3D11SamplerState> m_samplerState;
+};
+
 class ResourceManager
 {
 public:
@@ -38,10 +43,14 @@ public:
 	void SetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
 	bool GetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
 
+	void SetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo);
+	bool GetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo);
 protected:
 	HashMap<String, TextureInfo> m_texturesPool;
 	HashMap<String, Vector<MeshData>> m_meshDataPool;
 	HashMap<WString, VertexShaderInfo> m_vsPool;
 	HashMap<WString, PixelShaderInfo> m_psPool;
+
+	HashMap<String, SamplerStateInfo> m_samplerPool;
 };
 

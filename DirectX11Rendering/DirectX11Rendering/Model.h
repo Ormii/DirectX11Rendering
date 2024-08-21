@@ -39,7 +39,7 @@ public:
     void SetSpecularResView(ComPtr<ID3D11ShaderResourceView> specularResView) { m_specularResView = specularResView; }
 
 protected:
-    virtual void CreateSamplerState(ComPtr<ID3D11Device>& device);
+    virtual ComPtr<ID3D11SamplerState> CreateSamplerState(ComPtr<ID3D11Device> device);
 
 protected:
     ModelVertexConstantData m_modelVertexConstantData;

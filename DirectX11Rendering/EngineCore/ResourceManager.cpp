@@ -71,3 +71,20 @@ bool ResourceManager::GetPsShader(const WString& filename, PixelShaderInfo& pixe
 	return true;
 }
 
+void ResourceManager::SetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo)
+{
+	if (m_samplerPool.find(samplerName) == m_samplerPool.end())
+		return;
+
+	m_samplerPool.insert({ samplerName, samplerStateInfo });
+}
+
+bool ResourceManager::GetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo)
+{
+	if (m_samplerPool.find(samplerName) == m_samplerPool.end())
+		return false;
+
+	samplerStateInfo = m_samplerPool[samplerName];
+	return true;
+}
+

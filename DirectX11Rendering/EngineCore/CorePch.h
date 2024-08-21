@@ -67,6 +67,7 @@ using std::wstring;
 #include "EngineUtility.h"
 #include "EngineBase.h"
 #include "GeometryGenerator.h"
+#include "SamplerGenerator.h"
 #include "Container.h"
 
 

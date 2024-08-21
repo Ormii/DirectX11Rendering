@@ -16,7 +16,8 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	m_modelVertexConstantData.view = Matrix();
 	m_modelVertexConstantData.projection = Matrix();
 
-	CreateSamplerState(device);
+	auto bindFunc = std::bind(&Model::CreateSamplerState, this, std::placeholders::_1);
+	SamplerGenerator::MakeSampler("DefaultModel", m_modelDefaultSamplerState, bindFunc, device);
 
 	EngineUtility::CreateConstantBuffer(device, context, m_modelVertexConstantData, m_modelvertexConstantBuffer);
 	EngineUtility::CreateConstantBuffer(device, context, m_modelPixelConstantData, m_modelpixelConstantBuffer);
@@ -190,7 +191,7 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	
 
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);
-	context->PSSetSamplers(0, 0, m_modelDefaultSamplerState.GetAddressOf());
+	context->PSSetSamplers(0, 1, m_modelDefaultSamplerState.GetAddressOf());
 	context->PSSetShader(m_modelPixelShader.Get(), 0, 0);
 
 	if (g_bUseDrawWireFrame)
@@ -266,8 +267,9 @@ void Model::Update(float dt)
 	m_boundingSphere.Radius = scaled.Length();
 }
 
-void Model::CreateSamplerState(ComPtr<ID3D11Device>& device)
+ComPtr<ID3D11SamplerState> Model::CreateSamplerState(ComPtr<ID3D11Device> device)
 {
+	ComPtr<ID3D11SamplerState> samplerState;
 	D3D11_SAMPLER_DESC samplerDesc;
 	ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
 	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -277,5 +279,8 @@ void Model::CreateSamplerState(ComPtr<ID3D11Device>& device)
 	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 	samplerDesc.MinLOD = 0;
 	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	device->CreateSamplerState(&samplerDesc, m_modelDefaultSamplerState.GetAddressOf());
+	device->CreateSamplerState(&samplerDesc, samplerState.GetAddressOf());
+
+
+	return samplerState;
 }

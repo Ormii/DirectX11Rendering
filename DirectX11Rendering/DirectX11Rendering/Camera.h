@@ -73,5 +73,9 @@ private:
     ComPtr<ID3D11VertexShader> m_frustomVertexShader;
     ComPtr<ID3D11PixelShader> m_frustomPixelShader;
     ComPtr<ID3D11InputLayout> m_frustomInputLayout;
+
+    virtual ComPtr<ID3D11SamplerState> CreateSamplerState(ComPtr<ID3D11Device> device);
+
+    ComPtr<ID3D11SamplerState> m_frustomSamplerState;
 };
 
