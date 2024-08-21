@@ -23,10 +23,22 @@ bool Engine::Initialize()
 	if(!EngineBase::Initialize())
 		return false;
 
-	m_mainCamera = MakeShared<Camera>();
-	m_mainCamera->GetTranslation() = Vector3(0.0f, 0.0f, -10.0);
-	m_mainCamera->GetRotation() = Vector3(0.0f, 0.0f, 0.0f);
+	{
+		auto camera = MakeShared<Camera>();
+		camera->Initialize(m_device, m_context, GetAspectRatio());
+		camera->GetTranslation() = Vector3(0.0f, 0.0f, -10.0);
+		camera->GetRotation() = Vector3(0.0f, 0.0f, 0.0f);
 
+		m_cameras.push_back(camera);
+
+		auto otherCamera = MakeShared<Camera>();
+		otherCamera->Initialize(m_device, m_context, GetAspectRatio());
+		otherCamera->GetTranslation() = Vector3(0.0f, 10.0f, -10.0);
+		otherCamera->GetRotation() = Vector3(0.0f, 0.0f, 0.0f);
+
+		m_cameras.push_back(otherCamera);
+	}
+	
 	m_cubeMap = MakeShared<CubeMap>();
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
 
@@ -148,7 +160,11 @@ void Engine::Update(float dt)
 		GetMainCamera()->SetSpeedUp(false);
 
 
-	m_mainCamera->Update(dt);
+	for (auto& camera : m_cameras)
+	{
+		camera->Update(dt);
+		camera->UpdateConstantBuffers(m_device, m_context);
+	}
 
 	m_directionalLight->Update(dt);
 
@@ -222,6 +238,11 @@ void Engine::Render()
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f, 0);
 
+	for (auto& camera : m_cameras)
+	{
+		camera->Render(m_context);
+	}
+
 	uint32 threadId = 1;
 	uint32 step = ((uint32)m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
 	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
@@ -274,6 +295,22 @@ void Engine::OnMouseMove(WPARAM wParam, int mouseX, int mouseY)
 		pCamera->UpdateMouse(m_mouseCursorNdcX - m_mousePrevCurserNdcX, m_mouseCursorNdxY - m_mousePrevCurserNdcY);
 }
 
+void Engine::KeyBeginPress(WPARAM wParam)
+{
+
+}
+
+void Engine::KeyEndPress(WPARAM wParam)
+{
+	switch (wParam)
+	{
+		// c키
+	case 0x43:
+		m_mainCameraIdx = (m_mainCameraIdx + 1) % m_cameras.size();
+		break;
+	}
+}
+
 void Engine::LoadResources()
 {
 
@@ -303,15 +340,10 @@ void Engine::RenderMeshes(ThreadParam param)
 
 	m_deviceLock.ReadLock();
 	HRESULT hr =  m_device->CreateDeferredContext(0, &deferredContext);
-	if (FAILED(hr)) // HRESULT가 실패 상태인지 확인
+	if (FAILED(hr))
 	{
 		std::cerr << "Error: " << "Failed to create deferred context" << " (HRESULT: " << std::hex << hr << ")" << std::endl;
 
-		// 추가로 필요한 오류 처리 (예: 오류에 따른 리소스 정리)
-		// ...
-
-		// 예외를 던지거나 프로그램을 종료할 수도 있습니다.
-		// throw std::runtime_error("HRESULT failed");
 	}
 	
 	m_deviceLock.ReadUnLock();
@@ -323,8 +355,8 @@ void Engine::RenderMeshes(ThreadParam param)
 	D3D11_VIEWPORT viewport = {};
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
-	viewport.Width = static_cast<float>(m_screenWidth);  // 뷰포트의 너비
-	viewport.Height = static_cast<float>(m_screenHeight); // 뷰포트의 높이
+	viewport.Width = static_cast<float>(m_screenWidth);
+	viewport.Height = static_cast<float>(m_screenHeight); 
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	deferredContext->RSSetViewports(1, &viewport);

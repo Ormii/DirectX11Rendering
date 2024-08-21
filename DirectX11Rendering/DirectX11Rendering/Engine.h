@@ -22,7 +22,8 @@ public:
 
 protected:
 	virtual void OnMouseMove(WPARAM wParam, int mouseX, int mouseY) override;
-
+	virtual void KeyBeginPress(WPARAM wParam) override;
+	virtual void KeyEndPress(WPARAM wParam) override;
 private:
 	void LoadResources();
 
@@ -41,7 +42,8 @@ private:
 	Lock m_modelLock;
 
 public:
-	const std::shared_ptr<Camera> GetMainCamera() { return m_mainCamera; }
+	const std::shared_ptr<Camera> GetMainCamera() { return m_cameras[m_mainCameraIdx]; }
+	const std::shared_ptr<Camera> GetFrustomCullingCamera() { return m_cameras[0]; }
 
 	shared_ptr<Light>& GetDirectionalLight(){ return m_directionalLight; }
 	Vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
@@ -55,8 +57,11 @@ private:
 	Vector<std::shared_ptr<Light>> m_pointLights;
 	Vector<std::shared_ptr<Light>> m_spotLights;
 	
-	std::shared_ptr<Camera> m_mainCamera;
+	Vector<std::shared_ptr<Camera>> m_cameras;
+
 	std::shared_ptr<CubeMap> m_cubeMap;
+
+	int32 m_mainCameraIdx = 0;
 
 private:
 	std::weak_ptr<Model> m_targetModel;

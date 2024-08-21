@@ -26,6 +26,8 @@ protected:
 
 protected:
 	virtual void OnMouseMove(WPARAM wParam, int mouseX, int mouseY);
+	virtual void KeyBeginPress(WPARAM wParam) = 0;
+	virtual void KeyEndPress(WPARAM wParam) = 0;
 
 public:
 	float GetAspectRatio();

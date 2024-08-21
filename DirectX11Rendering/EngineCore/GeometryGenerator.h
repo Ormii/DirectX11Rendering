@@ -11,6 +11,7 @@ public:
     static void MakeCylinder(const String MeshName, const float bottomRadius,
         const float topRadius, float height,
         int numSlices, MeshData& meshData);
+    static void MakeFrustom(const String MeshName, const float aspect, const float fovY, const float nearZ, const float farZ, MeshData& meshData);
     static void MakeSphere(const String MeshName, const float radius, const int numSlices,
         const int numStacks, MeshData& meshData);
 };

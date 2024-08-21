@@ -125,11 +125,13 @@ LRESULT EngineBase::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_KEYDOWN:
         {
             m_keyPressed[wParam] = true;
+            KeyBeginPress(wParam);
         }
             break;
         case WM_KEYUP:
         {
             m_keyPressed[wParam] = false;
+            KeyEndPress(wParam);
         }
             break;
         case WM_DESTROY:

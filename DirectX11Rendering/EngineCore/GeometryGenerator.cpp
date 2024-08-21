@@ -224,7 +224,7 @@ void GeometryGenerator::MakeBox(const String MeshName, MeshData& meshData, const
             20, 21, 22, 20, 22, 23  // 오른쪽
         };
 
-        g_ResourceManager->SetMeshData("Box", meshes);
+        g_ResourceManager->SetMeshData(MeshName, meshes);
     }
 
     meshData = meshes[0];
@@ -278,6 +278,202 @@ void GeometryGenerator::MakeCylinder(const String MeshName, const float bottomRa
             indices.push_back(i + 1 + numSlices + 1);
             indices.push_back(i + 1);
         }
+
+        g_ResourceManager->SetMeshData(MeshName, meshes);
+    }
+
+    meshData = meshes[0];
+}
+
+void GeometryGenerator::MakeFrustom(const String MeshName, const float aspect, const float fovY, const float nearZ, const float farZ, MeshData& meshData)
+{
+    Vector<MeshData> meshes(1);
+    if (!g_ResourceManager->GetMeshData(MeshName, meshes))
+    {
+        vector<Vector3> positions;
+        vector<Vector3> colors;
+        vector<Vector3> normals;
+        vector<Vector2> texcoords;
+
+        float nearHeight = 2.0f * tan(fovY / 2.0f) * nearZ;
+        float nearWidth = nearHeight * aspect;
+        float farHeight = 2.0f * tan(fovY / 2.0f) * farZ;
+        float farWidth = farHeight * aspect;
+
+        Vector3 nearCenter = Vector3(0.0f, 0.0f, nearZ);
+        Vector3 farCenter = Vector3(0.0f, 0.0f, nearZ);
+
+        Vector3 nearTopLeft = Vector3(-nearWidth / 2.0f, nearHeight / 2.0f, nearZ);
+        Vector3 nearTopRight = Vector3(nearWidth / 2.0f, nearHeight / 2.0f, nearZ);
+        Vector3 nearBottomLeft = Vector3(-nearWidth / 2.0f, -nearHeight / 2.0f, nearZ);
+        Vector3 nearBottomRight = Vector3(nearWidth / 2.0f, -nearHeight / 2.0f, nearZ);
+
+        Vector3 farTopLeft = Vector3(-farWidth / 2.0f, farHeight / 2.0f, farZ);
+        Vector3 farTopRight = Vector3(farWidth / 2.0f, farHeight / 2.0f, farZ);
+        Vector3 farBottomLeft = Vector3(-farWidth / 2.0f, -farHeight / 2.0f, farZ);
+        Vector3 farBottomRight = Vector3(farWidth / 2.0f, -farHeight / 2.0f, farZ);
+
+
+        // 윗면
+        positions.push_back(nearTopLeft);
+        positions.push_back(farTopLeft);
+        positions.push_back(farTopRight);
+        positions.push_back(nearTopRight);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (farTopLeft - nearTopLeft).Cross(nearTopRight - nearTopLeft);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+
+        // 아랫면
+        positions.push_back(farBottomLeft);
+        positions.push_back(nearBottomLeft);
+        positions.push_back(nearBottomRight);
+        positions.push_back(farBottomRight);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (nearBottomRight - nearBottomLeft).Cross(farBottomLeft - nearBottomLeft);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+
+        // 앞면
+        positions.push_back(nearBottomLeft);
+        positions.push_back(nearTopLeft);
+        positions.push_back(nearTopRight);
+        positions.push_back(nearBottomRight);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (nearTopLeft - nearBottomLeft).Cross(nearBottomRight - nearBottomLeft);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+
+        // 뒷면
+        positions.push_back(farBottomRight);
+        positions.push_back(farTopRight);
+        positions.push_back(farTopLeft);
+        positions.push_back(farBottomLeft);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (farTopRight - farBottomRight).Cross(farBottomLeft - farBottomRight);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+
+        // 왼쪽
+        positions.push_back(farBottomLeft);
+        positions.push_back(farTopLeft);
+        positions.push_back(nearTopLeft);
+        positions.push_back(nearBottomLeft);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (farTopLeft - farBottomLeft).Cross(nearBottomLeft - farBottomLeft);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+
+        // 오른쪽
+        positions.push_back(nearBottomRight);
+        positions.push_back(nearTopRight);
+        positions.push_back(farTopRight);
+        positions.push_back(farBottomRight);
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+        colors.push_back(Vector3(1.0f, 0.0f, 0.0f));
+
+        {
+            Vector3 normal = (nearTopRight - nearBottomRight).Cross(farBottomRight - nearBottomRight);
+            normal.Normalize();
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+            normals.push_back(normal);
+        }
+
+        texcoords.push_back(Vector2(1.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 0.0f));
+        texcoords.push_back(Vector2(0.0f, 1.0f));
+        texcoords.push_back(Vector2(1.0f, 1.0f));
+
+        for (size_t i = 0; i < positions.size(); i++) {
+            Vertex v;
+            v.position = positions[i];
+            v.normal = normals[i];
+            v.texcoord = texcoords[i];
+            meshes[0].vertices.push_back(v);
+        }
+
+        meshes[0].indices = {
+            0,  1,  2,  0,  2,  3,  // 윗면
+            4,  5,  6,  4,  6,  7,  // 아랫면
+            8,  9,  10, 8,  10, 11, // 앞면
+            12, 13, 14, 12, 14, 15, // 뒷면
+            16, 17, 18, 16, 18, 19, // 왼쪽
+            20, 21, 22, 20, 22, 23  // 오른쪽
+        };
 
         g_ResourceManager->SetMeshData(MeshName, meshes);
     }

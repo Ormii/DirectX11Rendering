@@ -6,14 +6,38 @@ Camera::Camera()
 	
 }
 
+
+void Camera::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, float aspect)
+{
+	m_aspect = aspect;
+
+	MeshData meshData{};
+
+	GeometryGenerator::MakeFrustom("PerspectiveFrustom", m_aspect, m_projFovAngleY, m_nearZ, m_farZ, meshData);
+	m_frustomMesh = MakeShared<Mesh>();
+
+	vector<D3D11_INPUT_ELEMENT_DESC> inputElements =
+	{
+		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"NORMAL",0,DXGI_FORMAT_R32G32B32_FLOAT,0,4 * 3,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"TEXCOORD",0,DXGI_FORMAT_R32G32_FLOAT,0,4 * 3 + 4 * 3,D3D11_INPUT_PER_VERTEX_DATA,0},
+	};
+
+	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"BoundingVertexShader.hlsl", inputElements, m_frustomVertexShader, m_frustomInputLayout);
+	EngineUtility::CreatePixelShader(device, context, L"BoundingPixelShader.hlsl", m_frustomPixelShader);
+
+	EngineUtility::CreateConstantBuffer(device, context, m_cameraVertexConstantBufferData, m_frustomMesh->vertexConstantBuffer);
+
+	m_frustomMesh->m_indexCount = (UINT)meshData.indices.size();
+	EngineUtility::CreateVertexBuffer(device, context, meshData.vertices, m_frustomMesh->vertexBuffer);
+	EngineUtility::CreateIndexBuffer(device, context, meshData.indices, m_frustomMesh->indexBuffer);
+}
+
 void Camera::Update(float dt)
 {
 	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
 	if (pEngine == nullptr)
 		return;
-
-	m_aspect = pEngine->GetAspectRatio();
-
 	float pitch = -m_rotation.x;
 	float yaw = m_rotation.y;
 	float roll = m_rotation.z;
@@ -33,8 +57,6 @@ void Camera::Update(float dt)
 	Vector3 target = Vector3(m_translation.x + Look.x,
 		m_translation.y + Look.y,
 		m_translation.z + Look.z);
-		
-	//m_viewMatrix = Matrix::CreateLookAt(m_translation, target, up);
 
 	m_rightDir = Right;
 	m_upDir = Up;
@@ -49,6 +71,69 @@ void Camera::UpdateMouse(float deltaMouseNdcX, float deltaMouseNdcY)
 	m_rotation.x += deltaMouseNdcY * DirectX::XM_PIDIV2;
 }
 
+void Camera::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
+{
+	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
+	if (pEngine == nullptr)
+		return;
+
+	auto modelRow = Matrix::CreateScale(GetScaling())
+		* Matrix::CreateRotationZ(-GetRotation().z)
+		* Matrix::CreateRotationX(-GetRotation().x)
+		* Matrix::CreateRotationY(GetRotation().y)
+		* Matrix::CreateTranslation(GetTranslation());
+
+	auto invTransposeRow = modelRow.Transpose();
+	invTransposeRow.Translation(Vector3(0.0f));
+	invTransposeRow = invTransposeRow.Transpose().Invert();
+
+	auto viewRow = pEngine->GetMainCamera()->GetViewMat();
+
+	Matrix projRow = Matrix();
+
+	if (g_bUsePerspectiveProjection)
+		projRow = pEngine->GetMainCamera()->GetPersMat();
+	else
+		projRow = pEngine->GetMainCamera()->GetOrthMat();
+
+	m_cameraVertexConstantBufferData.model = modelRow.Transpose();
+	m_cameraVertexConstantBufferData.view = viewRow.Transpose();
+	m_cameraVertexConstantBufferData.invTranspose = invTransposeRow;
+	m_cameraVertexConstantBufferData.projection = projRow.Transpose();
+
+	EngineUtility::UpdateBuffer(device, context, m_cameraVertexConstantBufferData, m_frustomMesh->vertexConstantBuffer);
+}
+
+void Camera::Render(ComPtr<ID3D11DeviceContext>& context)
+{
+	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
+	if (pEngine == nullptr)
+		return;
+
+	if (pEngine->GetMainCamera().get() != this)
+	{
+		UINT stride = sizeof(Vertex), offset = 0;
+		{
+			context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+
+			context->IASetVertexBuffers(0, 1, m_frustomMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
+			context->IASetInputLayout(m_frustomInputLayout.Get());
+			context->IASetIndexBuffer(m_frustomMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+			context->VSSetConstantBuffers(0, 1, m_frustomMesh->vertexConstantBuffer.GetAddressOf());
+			context->VSSetShader(m_frustomVertexShader.Get(), 0, 0);
+
+			context->PSSetShader(m_frustomPixelShader.Get(), 0, 0);
+			context->DrawIndexed(m_frustomMesh->m_indexCount, 0, 0);
+
+			if (!g_bUseDrawWireFrame)
+				context->RSSetState(pEngine->GetSolidRasterizerState().Get());
+		}
+	}
+}
+
 void Camera::MoveForward(float dt)
 {
 	m_translation += m_forwardDir * m_moveSpeed * dt * (m_bSpeedUp ? 3.0f : 1.0f);
@@ -61,7 +146,7 @@ void Camera::MoveRight(float dt)
 
 Matrix Camera::GetViewMat()
 {
-	return Matrix::CreateTranslation(-m_translation)*
+	return Matrix::CreateTranslation(-m_translation) *
 		Matrix::CreateRotationY(-m_rotation.y)*
 		Matrix::CreateRotationX(m_rotation.x)*
 		Matrix::CreateRotationZ(m_rotation.z);
