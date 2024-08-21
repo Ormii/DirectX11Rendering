@@ -183,14 +183,11 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	Engine* pEngine = dynamic_cast<Engine*>(g_EngineBase);
 	if (pEngine == nullptr)
 		return;
-
+	
 	if (!pEngine->GetMainCamera()->CheckBoundingSphereInFrustom(m_boundingSphere, 
-		Matrix::CreateScale(GetScaling())
-		* Matrix::CreateRotationY(GetRotation().y)
-		* Matrix::CreateRotationX(GetRotation().x)
-		* Matrix::CreateRotationZ(GetRotation().z)
-		* Matrix::CreateTranslation(GetTranslation() + m_boundingDefaultCenter)))
+		Matrix::CreateTranslation(GetTranslation())))
 		return;
+	
 
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);
 	context->PSSetSamplers(0, 0, m_modelDefaultSamplerState.GetAddressOf());

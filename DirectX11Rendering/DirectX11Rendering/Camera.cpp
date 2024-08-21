@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Camera.h"
-
+#include <d3d11.h>
 Camera::Camera()
 {
 	
@@ -14,7 +14,7 @@ void Camera::Update(float dt)
 
 	m_aspect = pEngine->GetAspectRatio();
 
-	float pitch = m_rotation.x;
+	float pitch = -m_rotation.x;
 	float yaw = m_rotation.y;
 	float roll = m_rotation.z;
 
@@ -24,19 +24,21 @@ void Camera::Update(float dt)
 	Look = Vector3::Transform(Look, rotationMatrix);
 	Look.Normalize();
 
-	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
-	up = Vector3::Transform(up, rotationMatrix);
-	up.Normalize();
+	Vector3 Right = Vector3::Up.Cross(Look);
+	Right.Normalize();
+
+	Vector3 Up = Look.Cross(Right);
+	Up.Normalize();
 
 	Vector3 target = Vector3(m_translation.x + Look.x,
 		m_translation.y + Look.y,
 		m_translation.z + Look.z);
 		
-	m_viewMatrix = Matrix::CreateLookAt(m_translation, target, up);
+	//m_viewMatrix = Matrix::CreateLookAt(m_translation, target, up);
 
-	m_rightDir = Vector3(m_viewMatrix.m[0][0], m_viewMatrix.m[1][0], m_viewMatrix.m[2][0]);
-	m_upDir = Vector3(m_viewMatrix.m[0][1], m_viewMatrix.m[1][1], m_viewMatrix.m[2][1]);
-	m_forwardDir = Vector3(m_viewMatrix.m[0][2], m_viewMatrix.m[1][2], m_viewMatrix.m[2][2]);
+	m_rightDir = Right;
+	m_upDir = Up;
+	m_forwardDir = Look;
 
 	ConstructFrustomPlanes();
 }
@@ -59,7 +61,10 @@ void Camera::MoveRight(float dt)
 
 Matrix Camera::GetViewMat()
 {
-	return m_viewMatrix;
+	return Matrix::CreateTranslation(-m_translation)*
+		Matrix::CreateRotationY(-m_rotation.y)*
+		Matrix::CreateRotationX(m_rotation.x)*
+		Matrix::CreateRotationZ(m_rotation.z);
 }
 
 Matrix Camera::GetPersMat()
@@ -75,9 +80,14 @@ Matrix Camera::GetOrthMat()
 
 void Camera::ConstructFrustomPlanes()
 {
-	Matrix viewProj = GetViewMat()*GetOrthMat();
+	Matrix projMat = GetOrthMat();
 	if (g_bUsePerspectiveProjection)
-		viewProj = GetViewMat() * GetPersMat();
+		projMat = GetPersMat();
+
+
+	Matrix viewMat = GetViewMat();
+	
+	Matrix viewProj = viewMat * projMat;
 
 	// Left
 	m_planes[0].x = viewProj._14 + viewProj._11;
@@ -104,17 +114,16 @@ void Camera::ConstructFrustomPlanes()
 	m_planes[3].w = viewProj._44 - viewProj._42;
 
 	// Near
-	m_planes[4].x = viewProj._13;
-	m_planes[4].y = viewProj._23;
-	m_planes[4].z = viewProj._33;
-	m_planes[4].w = viewProj._43;
+	m_planes[4].x = viewProj._14 + viewProj._13;
+	m_planes[4].y = viewProj._24 + viewProj._23;
+	m_planes[4].z = viewProj._34 + viewProj._33;
+	m_planes[4].w = viewProj._44 + viewProj._43;
 
 	// Far
 	m_planes[5].x = viewProj._14 - viewProj._13;
 	m_planes[5].y = viewProj._24 - viewProj._23;
 	m_planes[5].z = viewProj._34 - viewProj._33;
 	m_planes[5].w = viewProj._44 - viewProj._43;
-
 
 	for (int i = 0; i < 6; i++)
 	{
@@ -124,23 +133,18 @@ void Camera::ConstructFrustomPlanes()
 		m_planes[i].z /= length;
 		m_planes[i].w /= length;
 	}
-
+	
 }
 
 bool Camera::CheckBoundingSphereInFrustom(BoundingSphere& boundingSphere, Matrix&& World)
 {
 	Vector3 sphereCenter = Vector3(0.0f,0.0f,0.0f);
-	sphereCenter = Vector3::Transform(sphereCenter, World * GetViewMat().Invert());
+	sphereCenter = Vector3::Transform(sphereCenter, World );
 	
 
 	for (uint32 i = 0; i < 6; ++i)
 	{
-		float distance =
-			m_planes[i].x * sphereCenter.x +
-			m_planes[i].y * sphereCenter.y +
-			m_planes[i].z * sphereCenter.z +
-			m_planes[i].w;
-		if (distance < -boundingSphere.Radius)
+		if (m_planes[i].Dot(Vector4(sphereCenter.x, sphereCenter.y, sphereCenter.z,1.0f)) < -boundingSphere.Radius)
 		{
 			return false;
 		}

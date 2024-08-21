@@ -37,9 +37,9 @@ private:
     float m_aspect = 0.0f;
 
 
-    float m_projFovAngleY = 70.0f;
+    float m_projFovAngleY = 70.0;
     float m_nearZ = 0.01f;
-    float m_farZ = 100.0f;
+    float m_farZ = 1000.0f;
 
     float m_moveSpeed = 3.0f;
     bool m_bSpeedUp = false;
