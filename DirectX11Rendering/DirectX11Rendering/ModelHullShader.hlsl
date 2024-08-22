@@ -32,8 +32,8 @@ PatchConstOutput CalcHSPatchConstants(
     
     float3 center = (ip[0].posWorld + ip[1].posWorld + ip[2].posWorld)/3.0;
     float dist = length(eyeWorld - center);
-    float distMin = 2.0;
-    float distMax = 10.0;
+    float distMin = 10.0;
+    float distMax = 15.0;
     float tess = (useLod == true) ? weight * saturate((distMax - dist) / (distMax - distMin)) + 1 : 1.0;
     
 

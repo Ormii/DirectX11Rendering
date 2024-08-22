@@ -1,4 +1,4 @@
-#define MAX_LIGHTS 12 
+#define MAX_LIGHTS 16 
 #define NUM_DIR_LIGHTS 1
 #define NUM_POINT_LIGHTS 1
 #define NUM_SPOT_LIGHTS 1

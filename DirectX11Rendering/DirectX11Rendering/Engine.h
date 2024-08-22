@@ -5,6 +5,10 @@ extern bool g_bUsePerspectiveProjection;
 extern bool g_bUseDrawNormals;
 extern bool g_bUseDrawWireFrame;
 
+
+#define MAX_MODEL_ROW_NUM	20
+#define MAX_MODEL_COL_NUM	20
+
 class Engine : public EngineBase
 {
 public:
@@ -26,15 +30,24 @@ protected:
 	virtual void KeyEndPress(WPARAM wParam) override;
 private:
 	void LoadResources();
+	void SetLights();
+
+
 
 private:
 	Vector<ComPtr<ID3D11CommandList>> m_commandLists;
 
-	bool UpdateMeshes(ThreadParam param, promise<bool>&&);
-	bool UpdateCubeMap(ThreadParam param, promise<bool>&&);
+	void UpdateWithThread(float dt);
 
-	bool RenderMeshes(ThreadParam param, promise<bool>&&);
-	bool RenderCubMap(ThreadParam param, promise<bool>&&);
+	bool UpdateMeshesThread(ThreadParam param, promise<bool>&&);
+	bool UpdateCubeMapThread(ThreadParam param, promise<bool>&&);
+	bool UpdateFloorThread(ThreadParam param, promise<bool>&&);
+
+	void RenderWithThread();
+
+	bool RenderMeshesThread(ThreadParam param, promise<bool>&&);
+	bool RenderCubMapThread(ThreadParam param, promise<bool>&&);
+	bool RenderFloorThread(ThreadParam param, promise<bool>&&);
 
 	Lock m_deviceLock;
 	Lock m_contextLock;
@@ -51,6 +64,9 @@ public:
 
 	float GetLodWeight() { return m_lodWeight; }
 	float GetProxyAppliedDistance() { return m_proxyMeshAppliedDist; }
+
+private:
+	shared_ptr<ProxyModel> MakeZelda();
 private:
 
 
@@ -63,12 +79,9 @@ private:
 	Vector<std::shared_ptr<Camera>> m_cameras;
 
 	std::shared_ptr<CubeMap> m_cubeMap;
+	std::shared_ptr<Model> m_floor;
 
 	int32 m_mainCameraIdx = 0;
-
-private:
-	std::weak_ptr<Model> m_targetModel;
-	std::weak_ptr<Light> m_targetLight;
 
 private:
 	Vector<std::shared_ptr<ImageFilter>> m_imageFilters;
