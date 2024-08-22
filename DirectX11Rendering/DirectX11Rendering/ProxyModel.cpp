@@ -103,4 +103,24 @@ void ProxyModel::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->DSSetShader(nullptr, 0, 0);
 	}
 
+	if (g_bUseDrawBoundingArea)
+	{
+		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+
+		context->IASetVertexBuffers(0, 1, m_boundingMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
+		context->IASetInputLayout(m_boundingInputLayout.Get());
+		context->IASetIndexBuffer(m_boundingMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
+		context->VSSetConstantBuffers(0, 1, m_modelvertexConstantBuffer.GetAddressOf());
+		context->VSSetShader(m_boundingVertexShader.Get(), 0, 0);
+
+		context->PSSetShader(m_boundingPixelShader.Get(), 0, 0);
+		context->DrawIndexed(m_boundingMesh->m_indexCount, 0, 0);
+
+		if (!g_bUseDrawWireFrame)
+			context->RSSetState(pEngine->GetSolidRasterizerState().Get());
+	}
+
 }

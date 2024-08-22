@@ -344,7 +344,7 @@ void GeometryGenerator::MakeFrustom(const String MeshName, const float aspect, c
         float farWidth = farHeight * aspect;
 
         Vector3 nearCenter = Vector3(0.0f, 0.0f, nearZ);
-        Vector3 farCenter = Vector3(0.0f, 0.0f, nearZ);
+        Vector3 farCenter = Vector3(0.0f, 0.0f, farZ);
 
         Vector3 nearTopLeft = Vector3(-nearWidth / 2.0f, nearHeight / 2.0f, nearZ);
         Vector3 nearTopRight = Vector3(nearWidth / 2.0f, nearHeight / 2.0f, nearZ);

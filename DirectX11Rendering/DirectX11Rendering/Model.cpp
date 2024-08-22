@@ -121,7 +121,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreateVertexBuffer(device, context, boundingMeshData.vertices, m_boundingMesh->vertexBuffer);
 	EngineUtility::CreateIndexBuffer(device, context, boundingMeshData.indices, m_boundingMesh->indexBuffer);
 
-	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"BoundingVertexShader.hlsl", inputElements, m_boundingVertexShader,m_boundingInputLayout);
+	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"BoundingVertexShader.hlsl", inputElements, m_boundingVertexShader, m_boundingInputLayout);
 	EngineUtility::CreatePixelShader(device, context, L"BoundingPixelShader.hlsl", m_boundingPixelShader);
 
 	m_modelHullConstantData.useLod = useLod;
@@ -240,8 +240,8 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->DSSetShader(nullptr, 0, 0);
 	}
 
-	/*
 	
+	if(g_bUseDrawBoundingArea)
 	{
 		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 
@@ -260,8 +260,6 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		if(!g_bUseDrawWireFrame)
 			context->RSSetState(pEngine->GetSolidRasterizerState().Get());
 	}
-	*/
-
 
 
 	/*

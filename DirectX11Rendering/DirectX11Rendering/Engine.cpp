@@ -4,7 +4,8 @@
 bool g_bUsePerspectiveProjection = true;
 bool g_bUseDrawNormals = false;
 bool g_bUseDrawWireFrame = false;
-
+bool g_bUseDrawBoundingArea = false;
+bool g_bUseDrawCameraFrustom = false;
 
 Engine::Engine()
 {
@@ -143,6 +144,8 @@ void Engine::Update(float dt)
 void Engine::UpdateGUI()
 {
 	ImGui::Checkbox("Draw WireFrame", &g_bUseDrawWireFrame);
+	ImGui::Checkbox("Draw BoundingArea", &g_bUseDrawBoundingArea);
+	ImGui::Checkbox("Draw Camera Frustom", &g_bUseDrawCameraFrustom);
 	
 	ImGui::SliderFloat("Blur Threshold", &m_threshold, 0.0f, 0.2f);
 	ImGui::SliderFloat("Blur Strength", &m_strength, 0.0f, 0.8f);

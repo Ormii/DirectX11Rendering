@@ -4,6 +4,8 @@
 extern bool g_bUsePerspectiveProjection;
 extern bool g_bUseDrawNormals;
 extern bool g_bUseDrawWireFrame;
+extern bool g_bUseDrawBoundingArea;
+extern bool g_bUseDrawCameraFrustom;
 
 
 #define MAX_MODEL_ROW_NUM	20

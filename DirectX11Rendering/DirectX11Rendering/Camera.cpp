@@ -113,27 +113,30 @@ void Camera::Render(ComPtr<ID3D11DeviceContext>& context)
 	if (pEngine == nullptr)
 		return;
 
-	if (pEngine->GetMainCamera().get() != this)
+	if (g_bUseDrawCameraFrustom)
 	{
-		UINT stride = sizeof(Vertex), offset = 0;
+		if (pEngine->GetMainCamera().get() != this)
 		{
-			context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+			UINT stride = sizeof(Vertex), offset = 0;
+			{
+				context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 
-			context->IASetVertexBuffers(0, 1, m_frustomMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
-			context->IASetInputLayout(m_frustomInputLayout.Get());
-			context->IASetIndexBuffer(m_frustomMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, offset);
-			context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				context->IASetVertexBuffers(0, 1, m_frustomMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
+				context->IASetInputLayout(m_frustomInputLayout.Get());
+				context->IASetIndexBuffer(m_frustomMesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, offset);
+				context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 
-			context->VSSetConstantBuffers(0, 1, m_frustomMesh->vertexConstantBuffer.GetAddressOf());
-			context->VSSetShader(m_frustomVertexShader.Get(), 0, 0);
+				context->VSSetConstantBuffers(0, 1, m_frustomMesh->vertexConstantBuffer.GetAddressOf());
+				context->VSSetShader(m_frustomVertexShader.Get(), 0, 0);
 
-			context->PSSetShader(m_frustomPixelShader.Get(), 0, 0);
-			context->PSSetSamplers(0, 1, m_frustomSamplerState.GetAddressOf());
-			context->DrawIndexed(m_frustomMesh->m_indexCount, 0, 0);
+				context->PSSetShader(m_frustomPixelShader.Get(), 0, 0);
+				context->PSSetSamplers(0, 1, m_frustomSamplerState.GetAddressOf());
+				context->DrawIndexed(m_frustomMesh->m_indexCount, 0, 0);
 
-			if (!g_bUseDrawWireFrame)
-				context->RSSetState(pEngine->GetSolidRasterizerState().Get());
+				if (!g_bUseDrawWireFrame)
+					context->RSSetState(pEngine->GetSolidRasterizerState().Get());
+			}
 		}
 	}
 }
