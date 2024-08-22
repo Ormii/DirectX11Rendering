@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Model.h"
+#include "ProxyModel.h"
 #include "CubeMap.h"
 #include "ImageFilter.h"
 

@@ -48,6 +48,9 @@ public:
 	shared_ptr<Light>& GetDirectionalLight(){ return m_directionalLight; }
 	Vector<std::shared_ptr<Light>>& GetPointLights() { return m_pointLights; }
 	Vector<std::shared_ptr<Light>>& GetSpotLights() { return m_spotLights; }
+
+	float GetLodWeight() { return m_lodWeight; }
+	float GetProxyAppliedDistance() { return m_proxyMeshAppliedDist; }
 private:
 
 
@@ -72,4 +75,6 @@ private:
 
 	float m_threshold = 0.1f;
 	float m_strength = 0.1f;
+	float m_lodWeight = 1.0f;
+	float m_proxyMeshAppliedDist = 10.0f;
 };

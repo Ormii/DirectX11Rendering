@@ -17,20 +17,29 @@ struct ModelPixelConstantData {
     LightData spotlight[MAX_LIGHTS];
 };
 
+struct ModelHullConstantBuffer{
+    Vector3 eyeWorld;
+    float weight;
+
+    bool useLod;
+    float dummy[3];
+};
+
+
 
 class Model : public Object
 {
 public:
     void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath,
-        const String& filename);
+        const String& filename, bool useLod = true);
 
     void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context,
-        const Vector<MeshData>& meshes);
+        const Vector<MeshData>& meshes, bool useLod = true);
 
     void UpdateConstantBuffers(ComPtr<ID3D11Device>& device,
         ComPtr<ID3D11DeviceContext>& context);
 
-    void Render(ComPtr<ID3D11DeviceContext>& context);
+    virtual void Render(ComPtr<ID3D11DeviceContext>& context);
 
 public:
     virtual void Update(float dt) override;
@@ -49,7 +58,7 @@ protected:
     ComPtr<ID3D11ShaderResourceView> m_specularResView;
 
 
-private:
+protected:
     Vector<shared_ptr<Mesh>> m_meshes;
 
     ComPtr<ID3D11VertexShader> m_modelVertexShader;
@@ -58,8 +67,15 @@ private:
 
     ComPtr<ID3D11Buffer> m_modelvertexConstantBuffer;
     ComPtr<ID3D11Buffer> m_modelpixelConstantBuffer;
+protected:
 
-private:
+    ModelHullConstantBuffer m_modelHullConstantData;
+
+    ComPtr<ID3D11HullShader>   m_modelHullShader;
+    ComPtr<ID3D11DomainShader> m_modelDomainShader;
+    ComPtr<ID3D11Buffer> m_modelHullConstantBuffer;
+
+protected:
 
     ComPtr<ID3D11VertexShader> m_normalVertexShader;
     ComPtr<ID3D11PixelShader> m_normalPixelShader;
@@ -70,7 +86,8 @@ private:
     ComPtr<ID3D11Buffer> m_normalVertexConstantBuffer;
     ComPtr<ID3D11Buffer> m_normalPixelConstantBuffer;
 
-private:
+
+protected:
     BoundingSphere           m_boundingSphere;
     Vector3                  m_boundingDefaultCenter;
     float                    m_boundingDefaultRadius;
@@ -79,7 +96,7 @@ private:
     ComPtr<ID3D11PixelShader> m_boundingPixelShader;
     ComPtr<ID3D11InputLayout> m_boundingInputLayout;
 
-private:
+protected:
     ComPtr<ID3D11SamplerState> m_modelDefaultSamplerState;
 };
 

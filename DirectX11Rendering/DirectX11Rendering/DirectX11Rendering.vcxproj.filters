@@ -78,6 +78,9 @@
     <ClCompile Include="ImageFilter.cpp">
       <Filter>Object\ImageFilter</Filter>
     </ClCompile>
+    <ClCompile Include="ProxyModel.cpp">
+      <Filter>Object\Model</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -109,6 +112,9 @@
     </ClInclude>
     <ClInclude Include="ImageFilter.h">
       <Filter>Object\ImageFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="ProxyModel.h">
+      <Filter>Object\Model</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +162,12 @@
     </FxCompile>
     <FxCompile Include="BoundingPixelShader.hlsl">
       <Filter>Shader\Bounding</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelHullShader.hlsl">
+      <Filter>Shader\Mesh</Filter>
+    </FxCompile>
+    <FxCompile Include="ModelDomainShader.hlsl">
+      <Filter>Shader\Mesh</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

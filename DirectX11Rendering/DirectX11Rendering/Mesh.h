@@ -8,6 +8,7 @@ struct Mesh {
 
     ComPtr<ID3D11Buffer> vertexConstantBuffer;
     ComPtr<ID3D11Buffer> pixelConstantBuffer;
+    ComPtr<ID3D11Buffer> hullConstantBuffer;
 
     ComPtr<ID3D11Texture2D> texture;
     ComPtr<ID3D11ShaderResourceView> textureResourceView;

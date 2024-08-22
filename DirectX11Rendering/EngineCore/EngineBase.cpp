@@ -382,7 +382,7 @@ bool EngineBase::CreateRasterizerState()
     D3D11_RASTERIZER_DESC wireRastDesc;
     ZeroMemory(&wireRastDesc, sizeof(D3D11_RASTERIZER_DESC));
     wireRastDesc.FillMode = D3D11_FILL_MODE::D3D11_FILL_WIREFRAME;
-    wireRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_NONE;
+    wireRastDesc.CullMode = D3D11_CULL_MODE::D3D11_CULL_BACK;
     wireRastDesc.FrontCounterClockwise = false;
 
     if (FAILED(m_device->CreateRasterizerState(&wireRastDesc, &m_wireRasterizerState)))

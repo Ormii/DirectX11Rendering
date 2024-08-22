@@ -23,6 +23,18 @@ struct PixelShaderInfo
 	ComPtr<ID3DBlob> m_shaderBlob;
 };
 
+struct HullShaderInfo
+{
+	ComPtr<ID3D11HullShader> m_hullShader;
+	ComPtr<ID3DBlob> m_shaderBlob;
+};
+
+struct DomainShaderInfo
+{
+	ComPtr<ID3D11DomainShader> m_domainShader;
+	ComPtr<ID3DBlob> m_shaderBlob;
+};
+
 struct SamplerStateInfo
 {
 	ComPtr<ID3D11SamplerState> m_samplerState;
@@ -43,13 +55,22 @@ public:
 	void SetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
 	bool GetPsShader(const WString& filename, PixelShaderInfo& pixelShaderInfo);
 
+	void SetHsShader(const WString& filename, HullShaderInfo& hullShaderInfo);
+	bool GetHsShader(const WString& filename, HullShaderInfo& hullShaderInfo);
+
+	void SetDsShader(const WString& filename, DomainShaderInfo& domainShaderInfo);
+	bool GetDsShader(const WString& filename, DomainShaderInfo& domainShaderInfo);
+
 	void SetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo);
 	bool GetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo);
+
 protected:
 	HashMap<String, TextureInfo> m_texturesPool;
 	HashMap<String, Vector<MeshData>> m_meshDataPool;
 	HashMap<WString, VertexShaderInfo> m_vsPool;
 	HashMap<WString, PixelShaderInfo> m_psPool;
+	HashMap<WString, HullShaderInfo> m_hsPool;
+	HashMap<WString, DomainShaderInfo> m_dsPool;
 
 	HashMap<String, SamplerStateInfo> m_samplerPool;
 };

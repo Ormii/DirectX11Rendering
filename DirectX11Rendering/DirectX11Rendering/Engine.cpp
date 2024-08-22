@@ -41,13 +41,16 @@ bool Engine::Initialize()
 	m_cubeMap->Initialize(m_device, m_context, L"../Resources/CubeMaps/skybox/cubemap_bgra.dds", L"../Resources/CubeMaps/skybox/cubemap_diffuse.dds", L"../Resources/CubeMaps/skybox/cubemap_specular.dds");
 	m_cubeMap->GetScaling() = Vector3(5.0f, 5.0f, 5.0f);
 
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
-		for (int j = 0; j < 2; ++j)
+		for (int j = 0; j < 10; ++j)
 		{
-			auto zelda = MakeShared<Model>();
-			zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
-			zelda->GetTranslation() = Vector3(-1.5f + 3*i, 0.0f, -1.5f + 3*j);
+			auto zelda = MakeShared<ProxyModel>();
+			zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx",false);
+			MeshData proxyMeshData{};
+			GeometryGenerator::MakeSphere("ProxySphere", 0.5f, 5, 5, proxyMeshData);
+			zelda->ProxyModeInitialize(m_device, m_context, Vector<MeshData>{proxyMeshData});
+			zelda->GetTranslation() = Vector3(-20.0f + 4*i, 0.0f, -20.0f + 4*j);
 			//zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
 			zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
 			zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
@@ -58,7 +61,7 @@ bool Engine::Initialize()
 	{
 		auto floor = MakeShared<Model>();
 		MeshData gridMeshData{};
-		GeometryGenerator::MakeSquareGrid("FloorGrid", 30, 30, gridMeshData);
+		GeometryGenerator::MakeSquareGrid("FloorGrid", 10, 10, gridMeshData);
 		floor->Initialize(m_device, m_context, Vector<MeshData>{gridMeshData});
 		floor->GetTranslation() = Vector3(0.0f, -0.5f, 0.0f);
 		floor->GetRotation() = Vector3(3.14/2, 0.0f, 0.0f);
@@ -226,6 +229,8 @@ void Engine::UpdateGUI()
 
 	ImGui::SliderFloat("Blur Threshold", &m_threshold, 0.0f, 1.0f);
 	ImGui::SliderFloat("Blur Strength", &m_strength, 0.0f, 20.0f);
+	ImGui::SliderFloat("Lod Weight", &m_lodWeight, 1.0f, 64.0f);
+	ImGui::SliderFloat("Proxy Dist", &m_proxyMeshAppliedDist, 1.0f, 100.0f);
 }
 
 void Engine::Render()

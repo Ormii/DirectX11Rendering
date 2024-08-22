@@ -71,6 +71,40 @@ bool ResourceManager::GetPsShader(const WString& filename, PixelShaderInfo& pixe
 	return true;
 }
 
+void ResourceManager::SetHsShader(const WString& filename, HullShaderInfo& hullShaderInfo)
+{
+	if (m_hsPool.find(filename) != m_hsPool.end())
+		return;
+
+	m_hsPool.insert({ filename, hullShaderInfo });
+}
+
+bool ResourceManager::GetHsShader(const WString& filename, HullShaderInfo& hullShaderInfo)
+{
+	if (m_hsPool.find(filename) == m_hsPool.end())
+		return false;
+
+	hullShaderInfo = m_hsPool[filename];
+	return true;
+}
+
+void ResourceManager::SetDsShader(const WString& filename, DomainShaderInfo& domainShaderInfo)
+{
+	if (m_dsPool.find(filename) != m_dsPool.end())
+		return;
+
+	m_dsPool.insert({ filename, domainShaderInfo });
+}
+
+bool ResourceManager::GetDsShader(const WString& filename, DomainShaderInfo& domainShaderInfo)
+{
+	if (m_dsPool.find(filename) == m_dsPool.end())
+		return false;
+
+	domainShaderInfo = m_dsPool[filename];
+	return true;
+}
+
 void ResourceManager::SetSamplerState(const String& samplerName, SamplerStateInfo& samplerStateInfo)
 {
 	if (m_samplerPool.find(samplerName) == m_samplerPool.end())

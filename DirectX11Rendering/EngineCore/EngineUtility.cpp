@@ -135,7 +135,7 @@ void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
 
 }
 
-void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer)
+void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& indexBuffer)
 {
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
@@ -149,7 +149,62 @@ void EngineUtility::CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
     indexBufferData.SysMemPitch = 0;
     indexBufferData.SysMemSlicePitch = 0;
 
-    device->CreateBuffer(&bufferDesc, &indexBufferData, &m_indexBuffer);
+    device->CreateBuffer(&bufferDesc, &indexBufferData, &indexBuffer);
+}
+
+void EngineUtility::CreateHullShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11HullShader>& hullShader)
+{
+    ComPtr<ID3DBlob> errorBlob;
+
+    HullShaderInfo hsInfo{};
+    if (!g_ResourceManager->GetHsShader(filename, hsInfo))
+    {
+        UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+        compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+        // ���̴��� �������� �̸��� "main"�� �Լ��� ����
+        // D3D_COMPILE_STANDARD_FILE_INCLUDE �߰�: ���̴����� include ���
+        HRESULT hr = D3DCompileFromFile(
+            filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+            "hs_5_0", compileFlags, 0, &hsInfo.m_shaderBlob, &errorBlob);
+
+        CheckResult(hr, errorBlob.Get());
+
+        device->CreateHullShader(hsInfo.m_shaderBlob->GetBufferPointer(),
+            hsInfo.m_shaderBlob->GetBufferSize(), NULL, &hsInfo.m_hullShader);
+    }
+
+    hullShader = hsInfo.m_hullShader;
+}
+
+void EngineUtility::CreateDomainShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11DomainShader>& domainShader)
+{
+    ComPtr<ID3DBlob> errorBlob;
+    DomainShaderInfo dsInfo{};
+    
+    if (!g_ResourceManager->GetDsShader(filename, dsInfo))
+    {
+        UINT compileFlags = 0;
+#if defined(DEBUG) || defined(_DEBUG)
+        compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+        // ���̴��� �������� �̸��� "main"�� �Լ��� ����
+        // D3D_COMPILE_STANDARD_FILE_INCLUDE �߰�: ���̴����� include ���
+        HRESULT hr = D3DCompileFromFile(
+            filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
+            "ds_5_0", compileFlags, 0, &dsInfo.m_shaderBlob, &errorBlob);
+
+        CheckResult(hr, errorBlob.Get());
+
+        device->CreateDomainShader(dsInfo.m_shaderBlob->GetBufferPointer(),
+            dsInfo.m_shaderBlob->GetBufferSize(), NULL,
+            &dsInfo.m_domainShader);
+    }
+
+    domainShader = dsInfo.m_domainShader;
 }
 
 void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String filename,

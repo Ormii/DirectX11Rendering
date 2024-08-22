@@ -44,6 +44,8 @@ inline void ThreadPool::ShutDown()
 
 	for (auto& worker : m_workers)
 		worker.join();
+
+	m_workers.clear();
 }
 
 inline void ThreadPool::WorkerThreads()

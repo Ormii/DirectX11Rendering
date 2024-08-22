@@ -14,8 +14,10 @@ public:
 		ComPtr<ID3D11InputLayout>& inputLayout);
 
 	static void CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11PixelShader>& pixelShader);
-	static void CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& m_indexBuffer);
-
+	static void CreateIndexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<uint32>& indices, ComPtr<ID3D11Buffer>& indexBuffer);
+	static void CreateHullShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11HullShader>& hullShader);
+	static void CreateDomainShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const WString& filename, ComPtr<ID3D11DomainShader>& domainShader);
+	
 	template <typename T_VERTEX>
 	static void CreateVertexBuffer(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context, const Vector<T_VERTEX>& vertices, ComPtr<ID3D11Buffer>& vertexBuffer)
 	{

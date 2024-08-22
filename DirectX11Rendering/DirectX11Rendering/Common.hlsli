@@ -108,6 +108,14 @@ struct VertexShaderInput
     float2 texcoord : TEXCOORD0;
 };
 
+struct VertexShaderOutput
+{
+    float3 posModel : POSITION0;
+    float3 posWorld : POSITION1;
+    float3 normalModel : NORMAL;
+    float2 texcoord : TEXCOORD0;
+};
+
 struct PixelShaderInput
 {
     float4 posProj : SV_POSITION;

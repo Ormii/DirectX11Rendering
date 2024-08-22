@@ -2,15 +2,15 @@
 #include "Model.h"
 #include "GeometryGenerator.h"
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename, bool useLod)
 {
 	Vector<MeshData> meshes;
 	GeometryGenerator::ReadFromFile(basePath, filename, meshes);
 
-	Initialize(device, context, meshes);
+	Initialize(device, context, meshes, useLod);
 }
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes, bool useLod)
 {
 	m_modelVertexConstantData.model = Matrix();
 	m_modelVertexConstantData.view = Matrix();
@@ -21,6 +21,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	EngineUtility::CreateConstantBuffer(device, context, m_modelVertexConstantData, m_modelvertexConstantBuffer);
 	EngineUtility::CreateConstantBuffer(device, context, m_modelPixelConstantData, m_modelpixelConstantBuffer);
+	EngineUtility::CreateConstantBuffer(device, context, m_modelHullConstantData, m_modelHullConstantBuffer);
 
 	int32 totVerticesCount = 0;
 	Vector3 minPoint = Vector3(10000, 10000, 10000);
@@ -38,6 +39,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 		newmesh->vertexConstantBuffer = m_modelvertexConstantBuffer;
 		newmesh->pixelConstantBuffer = m_modelpixelConstantBuffer;
+		newmesh->hullConstantBuffer = m_modelHullConstantBuffer;
 		newmesh->m_indexCount = static_cast<UINT>(meshData.indices.size());
 		totVerticesCount += meshData.vertices.size();
 		this->m_meshes.push_back(newmesh);
@@ -58,7 +60,6 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	m_boundingDefaultCenter = (minPoint + maxPoint)/2.0f;
 	m_boundingDefaultRadius = (maxPoint - minPoint).Length()/2.0f;
 
-
 	vector<D3D11_INPUT_ELEMENT_DESC> inputElements =
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -68,6 +69,9 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"ModelVertexShader.hlsl", inputElements, m_modelVertexShader, m_modelInputLayout);
 	EngineUtility::CreatePixelShader(device, context, L"ModelPixelShader.hlsl", m_modelPixelShader);
+	
+	EngineUtility::CreateHullShader(device, context, L"ModelHullShader.hlsl", m_modelHullShader);
+	EngineUtility::CreateDomainShader(device, context, L"ModelDomainShader.hlsl", m_modelDomainShader);
 
 	/*
 	
@@ -119,6 +123,8 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	EngineUtility::CreateVertexShaderAndInputLayout(device, context, L"BoundingVertexShader.hlsl", inputElements, m_boundingVertexShader,m_boundingInputLayout);
 	EngineUtility::CreatePixelShader(device, context, L"BoundingPixelShader.hlsl", m_boundingPixelShader);
+
+	m_modelHullConstantData.useLod = useLod;
 }
 
 void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
@@ -162,11 +168,15 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		m_modelVertexConstantData.invTranspose = invTransposeRow;
 		m_modelVertexConstantData.projection = projRow.Transpose();
 
+		m_modelHullConstantData.eyeWorld = eyeWorld;
+		m_modelHullConstantData.weight = pEngine->GetLodWeight();
+
 		m_modelPixelConstantData.eyeWorld = eyeWorld;
 		m_modelPixelConstantData.material = mesh->mat;
 		
 		EngineUtility::UpdateBuffer(device, context, m_modelVertexConstantData, mesh->vertexConstantBuffer);
 		EngineUtility::UpdateBuffer(device, context, m_modelPixelConstantData, mesh->pixelConstantBuffer);
+		EngineUtility::UpdateBuffer(device, context, m_modelHullConstantData, mesh->hullConstantBuffer);
 	}
 	/*
 
@@ -207,6 +217,13 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->IASetIndexBuffer(mesh->indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
 		context->VSSetConstantBuffers(0, 1, mesh->vertexConstantBuffer.GetAddressOf());
+		
+		context->HSSetConstantBuffers(0, 1, mesh->hullConstantBuffer.GetAddressOf());
+		context->HSSetShader(m_modelHullShader.Get(), 0, 0);
+
+		context->DSSetConstantBuffers(0, 1, mesh->vertexConstantBuffer.GetAddressOf());
+		context->DSSetShader(m_modelDomainShader.Get(), 0, 0);
+		
 		context->PSSetConstantBuffers(0, 1, mesh->pixelConstantBuffer.GetAddressOf());
 
 		ID3D11ShaderResourceView* resViews[3] = 
@@ -216,10 +233,15 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		};
 
 		context->PSSetShaderResources(0, 3, resViews);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_3_CONTROL_POINT_PATCHLIST);
 		context->DrawIndexed(mesh->m_indexCount, 0, 0);
+
+		context->HSSetShader(nullptr, 0, 0);
+		context->DSSetShader(nullptr, 0, 0);
 	}
 
+	/*
+	
 	{
 		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 
@@ -238,6 +260,7 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		if(!g_bUseDrawWireFrame)
 			context->RSSetState(pEngine->GetSolidRasterizerState().Get());
 	}
+	*/
 
 
 
