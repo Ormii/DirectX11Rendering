@@ -67,6 +67,9 @@ public:
 
 private:
 	shared_ptr<ProxyModel> MakeZelda();
+	shared_ptr<ProxyModel> MakeDuck();
+	shared_ptr<ProxyModel> MakeMonster();
+	shared_ptr<ProxyModel> MakeCorset();
 private:
 
 

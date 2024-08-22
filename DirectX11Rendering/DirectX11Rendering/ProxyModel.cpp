@@ -6,13 +6,25 @@ void ProxyModel::ProxyModeInitialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11
 	Vector<MeshData> meshes;
 	GeometryGenerator::ReadFromFile(basePath, filename, meshes);
 
-	Initialize(device, context, meshes);
+	ProxyModeInitialize(device, context, meshes);
 }
 
-void ProxyModel::ProxyModeInitialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes)
+void ProxyModel::ProxyModeInitialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, Vector<MeshData> meshes)
 {
-	for (const auto& meshData : meshes)
+	for (auto& meshData : meshes)
 	{
+		int32 step = 0;
+		int32 i = 0;
+
+		int32 indicesSize = meshData.indices.size() / 3;
+		for (i = 0, step = 0; i < indicesSize && step < meshData.indices.size(); i+=3, step += 6)
+		{
+			meshData.indices[i] = meshData.indices[step];
+			meshData.indices[i+1] = meshData.indices[step+1];
+			meshData.indices[i+2] = meshData.indices[step+2];
+		}
+		meshData.indices.resize(indicesSize);
+
 		auto newmesh = MakeShared<Mesh>();
 		EngineUtility::CreateVertexBuffer(device, context, meshData.vertices, newmesh->vertexBuffer);
 		EngineUtility::CreateIndexBuffer(device, context, meshData.indices, newmesh->indexBuffer);
@@ -26,6 +38,7 @@ void ProxyModel::ProxyModeInitialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11
 		newmesh->pixelConstantBuffer = m_modelpixelConstantBuffer;
 		newmesh->hullConstantBuffer = m_modelHullConstantBuffer;
 		newmesh->m_indexCount = static_cast<UINT>(meshData.indices.size());
+
 		this->m_proxyMeshes.push_back(newmesh);
 	}
 }

@@ -143,9 +143,7 @@ void Engine::Update(float dt)
 void Engine::UpdateGUI()
 {
 	ImGui::Checkbox("Draw WireFrame", &g_bUseDrawWireFrame);
-	ImGui::Checkbox("Draw Normals", &g_bUseDrawNormals);
-	ImGui::Checkbox("Use Perspective", &g_bUsePerspectiveProjection);
-
+	
 	ImGui::SliderFloat("Blur Threshold", &m_threshold, 0.0f, 0.2f);
 	ImGui::SliderFloat("Blur Strength", &m_strength, 0.0f, 0.8f);
 	ImGui::SliderFloat("Lod Weight", &m_lodWeight, 1.0f, 64.0f);
@@ -209,8 +207,46 @@ void Engine::KeyEndPress(WPARAM wParam)
 	case 0x43:
 		m_mainCameraIdx = (m_mainCameraIdx + 1) % m_cameras.size();
 		break;
-
-		// '['
+		// I키
+	case 0x49:
+	{
+		if (m_models.size() < MAX_MODEL_ROW_NUM * MAX_MODEL_COL_NUM)
+		{
+			m_modelLock.WriteLock();
+			int idx = m_models.size();
+			m_models.push_back(MakeCorset());
+			m_models.back()->GetTranslation() = Vector3(-20 + 2 * (idx % MAX_MODEL_COL_NUM), 0.0f, -20 + 2 * (idx / MAX_MODEL_COL_NUM));
+			m_modelLock.WriteUnlock();
+		}
+	}
+	break;
+		// 'O'키
+	case 0x4F:
+	{
+		if (m_models.size() < MAX_MODEL_ROW_NUM * MAX_MODEL_COL_NUM)
+		{
+			m_modelLock.WriteLock();
+			int idx = m_models.size();
+			m_models.push_back(MakeMonster());
+			m_models.back()->GetTranslation() = Vector3(-20 + 2 * (idx % MAX_MODEL_COL_NUM), 0.0f, -20 + 2 * (idx / MAX_MODEL_COL_NUM));
+			m_modelLock.WriteUnlock();
+		}
+	}
+	break;
+		// 'P'키
+	case 0x50:
+	{
+		if (m_models.size() < MAX_MODEL_ROW_NUM * MAX_MODEL_COL_NUM)
+		{
+			m_modelLock.WriteLock();
+			int idx = m_models.size();
+			m_models.push_back(MakeDuck());
+			m_models.back()->GetTranslation() = Vector3(-20 + 2 * (idx % MAX_MODEL_COL_NUM), 0.0f, -20 + 2 * (idx / MAX_MODEL_COL_NUM));
+			m_modelLock.WriteUnlock();
+		}
+	}
+	break;
+		// '['키
 	case 0xDB:
 	{
 		if (m_models.size() < MAX_MODEL_ROW_NUM * MAX_MODEL_COL_NUM)
@@ -223,6 +259,8 @@ void Engine::KeyEndPress(WPARAM wParam)
 		}
 	}
 		break;
+
+		// ']'키
 	case 0xDD:
 	{
 		if (!m_models.empty())
@@ -500,13 +538,46 @@ shared_ptr<ProxyModel> Engine::MakeZelda()
 {
 	auto zelda = MakeShared<ProxyModel>();
 	zelda->Initialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx", false);
-	MeshData proxyMeshData{};
-	GeometryGenerator::MakeSphere("ProxySphere", 0.5f, 5, 5, proxyMeshData);
-	zelda->ProxyModeInitialize(m_device, m_context, Vector<MeshData>{proxyMeshData});
+	zelda->ProxyModeInitialize(m_device, m_context, "../Resources/zelda/", "zeldaPosed001.fbx");
 	zelda->GetTranslation() = Vector3(0.0f, 0.0f,0.0f);
-	//zelda->GetScaling() = Vector3(4.0f, 4.0f, 4.0f);
 	zelda->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
 	zelda->SetSpecularResView(m_cubeMap->GetSpecularResView());
 	
 	return zelda;
+}
+
+shared_ptr<ProxyModel> Engine::MakeDuck()
+{
+	auto duck = MakeShared<ProxyModel>();
+	duck->Initialize(m_device, m_context, "../Resources/duck/", "Duck.dae", false);
+	duck->ProxyModeInitialize(m_device, m_context, "../Resources/duck/", "Duck.dae");
+	duck->GetTranslation() = Vector3(0.0f, 0.0f, 0.0f);
+	duck->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+	duck->SetSpecularResView(m_cubeMap->GetSpecularResView());
+
+	return duck;
+}
+
+shared_ptr<ProxyModel> Engine::MakeMonster()
+{
+	auto monster = MakeShared<ProxyModel>();
+	monster->Initialize(m_device, m_context, "../Resources/monster/", "Monster.dae", false);
+	monster->ProxyModeInitialize(m_device, m_context, "../Resources/monster/", "Monster.dae");
+	monster->GetTranslation() = Vector3(0.0f, 0.0f, 0.0f);
+	monster->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+	monster->SetSpecularResView(m_cubeMap->GetSpecularResView());
+
+	return monster;
+}
+
+shared_ptr<ProxyModel> Engine::MakeCorset()
+{
+	auto corset = MakeShared<ProxyModel>();
+	corset->Initialize(m_device, m_context, "../Resources/corset/", "Corset.fbx", false);
+	corset->ProxyModeInitialize(m_device, m_context, "../Resources/corset/", "Corset.fbx");
+	corset->GetTranslation() = Vector3(0.0f, 0.0f, 0.0f);
+	corset->SetDiffuseResView(m_cubeMap->GetDiffuseResView());
+	corset->SetSpecularResView(m_cubeMap->GetSpecularResView());
+
+	return corset;
 }
