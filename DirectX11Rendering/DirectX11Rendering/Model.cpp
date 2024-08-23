@@ -2,15 +2,15 @@
 #include "Model.h"
 #include "GeometryGenerator.h"
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename, bool useLod)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath, const String& filename, bool useLod, bool drawBoundingArea)
 {
 	Vector<MeshData> meshes;
 	GeometryGenerator::ReadFromFile(basePath, filename, meshes);
 
-	Initialize(device, context, meshes, useLod);
+	Initialize(device, context, meshes, useLod, drawBoundingArea);
 }
 
-void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes, bool useLod)
+void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const Vector<MeshData>& meshes, bool useLod, bool drawBoundingArea)
 {
 	m_modelVertexConstantData.model = Matrix();
 	m_modelVertexConstantData.view = Matrix();
@@ -116,6 +116,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 
 	m_boundingMesh = MakeShared<Mesh>();
 	MeshData boundingMeshData{};
+	m_boundingSphere.Radius = m_boundingDefaultRadius;
 	GeometryGenerator::MakeSphere("ModelBoundingSphere", m_boundingSphere.Radius, 20, 10, boundingMeshData);
 	m_boundingMesh->m_indexCount = (UINT)boundingMeshData.indices.size();
 	EngineUtility::CreateVertexBuffer(device, context, boundingMeshData.vertices, m_boundingMesh->vertexBuffer);
@@ -125,6 +126,7 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreatePixelShader(device, context, L"BoundingPixelShader.hlsl", m_boundingPixelShader);
 
 	m_modelHullConstantData.useLod = useLod;
+	m_bDrawBoundingArea = drawBoundingArea;
 }
 
 void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>& context)
@@ -241,7 +243,7 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	}
 
 	
-	if(g_bUseDrawBoundingArea)
+	if(g_bUseDrawBoundingArea && m_bDrawBoundingArea)
 	{
 		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 

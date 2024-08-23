@@ -57,10 +57,6 @@ void Camera::Update(float dt)
 	Vector3 Up = Look.Cross(Right);
 	Up.Normalize();
 
-	Vector3 target = Vector3(m_translation.x + Look.x,
-		m_translation.y + Look.y,
-		m_translation.z + Look.z);
-
 	m_rightDir = Right;
 	m_upDir = Up;
 	m_forwardDir = Look;
@@ -80,8 +76,8 @@ void Camera::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11De
 	if (pEngine == nullptr)
 		return;
 
-	auto modelRow = Matrix::CreateScale(GetScaling())
-		* Matrix::CreateRotationZ(-GetRotation().z)
+	auto modelRow =
+		Matrix::CreateRotationZ(-GetRotation().z)
 		* Matrix::CreateRotationX(-GetRotation().x)
 		* Matrix::CreateRotationY(GetRotation().y)
 		* Matrix::CreateTranslation(GetTranslation());
@@ -119,7 +115,7 @@ void Camera::Render(ComPtr<ID3D11DeviceContext>& context)
 		{
 			UINT stride = sizeof(Vertex), offset = 0;
 			{
-				context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+				//context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 
 				context->IASetVertexBuffers(0, 1, m_frustomMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
 				context->IASetInputLayout(m_frustomInputLayout.Get());

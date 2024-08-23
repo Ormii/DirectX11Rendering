@@ -199,8 +199,7 @@ void EngineUtility::CreateDomainShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D
         compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
-        // ���̴��� �������� �̸��� "main"�� �Լ��� ����
-        // D3D_COMPILE_STANDARD_FILE_INCLUDE �߰�: ���̴����� include ���
+
         HRESULT hr = D3DCompileFromFile(
             filename.c_str(), 0, D3D_COMPILE_STANDARD_FILE_INCLUDE, "main",
             "ds_5_0", compileFlags, 0, &dsInfo.m_shaderBlob, &errorBlob);

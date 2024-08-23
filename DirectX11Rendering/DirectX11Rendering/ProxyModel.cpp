@@ -103,7 +103,7 @@ void ProxyModel::Render(ComPtr<ID3D11DeviceContext>& context)
 		context->DSSetShader(nullptr, 0, 0);
 	}
 
-	if (g_bUseDrawBoundingArea)
+	if (g_bUseDrawBoundingArea && m_bDrawBoundingArea)
 	{
 		context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 

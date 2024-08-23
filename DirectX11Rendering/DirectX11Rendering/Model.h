@@ -31,10 +31,10 @@ class Model : public Object
 {
 public:
     void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context, const String& basePath,
-        const String& filename, bool useLod = true);
+        const String& filename, bool useLod = true, bool drawBoundingArea = true);
 
     void Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext> context,
-        const Vector<MeshData>& meshes, bool useLod = true);
+        const Vector<MeshData>& meshes, bool useLod = true, bool drawBoundingArea = true);
 
     void UpdateConstantBuffers(ComPtr<ID3D11Device>& device,
         ComPtr<ID3D11DeviceContext>& context);
@@ -98,5 +98,8 @@ protected:
 
 protected:
     ComPtr<ID3D11SamplerState> m_modelDefaultSamplerState;
+
+protected:
+    bool m_bDrawBoundingArea;
 };
 
