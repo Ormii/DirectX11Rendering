@@ -43,6 +43,15 @@ struct SamplerStateInfo
 class ResourceManager
 {
 public:
+	Lock m_meshDataLock;
+	Lock m_textureLock;
+	Lock m_vertexShaderLock;
+	Lock m_pixelShaderLock;
+	Lock m_hullShaderLock;
+	Lock m_domainShaderLock;
+	Lock m_samplerLock;
+
+public:
 	void SetMeshData(const String& meshName, Vector<MeshData>& meshDatas);
 	bool GetMeshData(const String& meshName, Vector<MeshData>& meshDatas);
 

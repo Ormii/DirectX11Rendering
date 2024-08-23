@@ -77,6 +77,8 @@ void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& devic
 
     VertexShaderInfo vsInfo{};
 
+
+    g_ResourceManager->m_vertexShaderLock.WriteLock();
     if (!g_ResourceManager->GetVsShader(filename, vsInfo))
     {
         UINT compileFlags = 0;
@@ -102,6 +104,7 @@ void EngineUtility::CreateVertexShaderAndInputLayout(ComPtr<ID3D11Device>& devic
 
         g_ResourceManager->SetVsShader(filename, vsInfo);
     }
+    g_ResourceManager->m_vertexShaderLock.WriteUnlock();
 
     vertexShader = vsInfo.m_vertexShader;
     inputLayout = vsInfo.m_inputLayout;
@@ -113,6 +116,7 @@ void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
 
     PixelShaderInfo psInfo{};
 
+    g_ResourceManager->m_pixelShaderLock.WriteLock();
     if (!g_ResourceManager->GetPsShader(filename, psInfo))
     {
         UINT compileFlags = 0;
@@ -130,6 +134,7 @@ void EngineUtility::CreatePixelShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D1
 
         g_ResourceManager->SetPsShader(filename, psInfo);
     }
+    g_ResourceManager->m_pixelShaderLock.WriteUnlock();
 
     pixelShader = psInfo.m_pixelShader;
 
@@ -157,6 +162,7 @@ void EngineUtility::CreateHullShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11
     ComPtr<ID3DBlob> errorBlob;
 
     HullShaderInfo hsInfo{};
+    g_ResourceManager->m_hullShaderLock.WriteLock();
     if (!g_ResourceManager->GetHsShader(filename, hsInfo))
     {
         UINT compileFlags = 0;
@@ -175,6 +181,7 @@ void EngineUtility::CreateHullShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D11
         device->CreateHullShader(hsInfo.m_shaderBlob->GetBufferPointer(),
             hsInfo.m_shaderBlob->GetBufferSize(), NULL, &hsInfo.m_hullShader);
     }
+    g_ResourceManager->m_hullShaderLock.WriteUnlock();
 
     hullShader = hsInfo.m_hullShader;
 }
@@ -184,6 +191,7 @@ void EngineUtility::CreateDomainShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D
     ComPtr<ID3DBlob> errorBlob;
     DomainShaderInfo dsInfo{};
     
+    g_ResourceManager->m_domainShaderLock.WriteLock();
     if (!g_ResourceManager->GetDsShader(filename, dsInfo))
     {
         UINT compileFlags = 0;
@@ -203,6 +211,7 @@ void EngineUtility::CreateDomainShader(ComPtr<ID3D11Device>& device, ComPtr<ID3D
             dsInfo.m_shaderBlob->GetBufferSize(), NULL,
             &dsInfo.m_domainShader);
     }
+    g_ResourceManager->m_domainShaderLock.WriteUnlock();
 
     domainShader = dsInfo.m_domainShader;
 }
@@ -213,6 +222,7 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String file
 {
     TextureInfo textureInfo{};
 
+    g_ResourceManager->m_textureLock.WriteLock();
     if (!g_ResourceManager->GetTexture(filename, textureInfo))
     {
         unsigned char* img =
@@ -243,6 +253,7 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String file
 
         g_ResourceManager->SetTexture(filename, textureInfo);
     }
+    g_ResourceManager->m_textureLock.WriteUnlock();
 
     texture = textureInfo.m_texture;
     textureResourceView = textureInfo.m_shaderResView;
