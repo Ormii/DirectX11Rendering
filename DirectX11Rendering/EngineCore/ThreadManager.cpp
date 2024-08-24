@@ -4,7 +4,7 @@
 
 ThreadManager::ThreadManager()
 {
-	m_maxThreadCount = 5;
+	m_maxThreadCount = min(max((uint32)5, std::thread::hardware_concurrency()),(uint32)1);
 
 	m_threadPool.Initialize(m_maxThreadCount);
 }
