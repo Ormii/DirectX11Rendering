@@ -416,12 +416,7 @@ bool Engine::RenderMeshesThread(ThreadParam param, promise<bool>&& pm)
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
 	m_deviceLock.ReadLock();
-	HRESULT hr =  m_device->CreateDeferredContext(0, &deferredContext);
-	if (FAILED(hr))
-	{
-		std::cerr << "Error: " << "Failed to create deferred context" << " (HRESULT: " << std::hex << hr << ")" << std::endl;
-	}
-	
+	m_device->CreateDeferredContext(0, &deferredContext);
 	m_deviceLock.ReadUnLock();
 
 	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),
@@ -500,12 +495,7 @@ bool Engine::RenderFloorThread(ThreadParam param, promise<bool>&& pm)
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
 	m_deviceLock.ReadLock();
-	HRESULT hr = m_device->CreateDeferredContext(0, &deferredContext);
-	if (FAILED(hr))
-	{
-		std::cerr << "Error: " << "Failed to create deferred context" << " (HRESULT: " << std::hex << hr << ")" << std::endl;
-	}
-
+	m_device->CreateDeferredContext(0, &deferredContext);
 	m_deviceLock.ReadUnLock();
 
 	deferredContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(),

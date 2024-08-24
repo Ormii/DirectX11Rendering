@@ -33,7 +33,7 @@ void ThreadPool::Enqueue(tuple<function<bool(ThreadParam, std::promise<bool>&&)>
 	m_cv.notify_one();
 }
 
-inline void ThreadPool::ShutDown()
+void ThreadPool::ShutDown()
 {
 	{
 		std::unique_lock lock(m_mutex);
@@ -48,7 +48,7 @@ inline void ThreadPool::ShutDown()
 	m_workers.clear();
 }
 
-inline void ThreadPool::WorkerThreads()
+void ThreadPool::WorkerThreads()
 {
 	while (true)
 	{
