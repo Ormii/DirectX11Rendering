@@ -4,7 +4,7 @@
 ThreadPool::ThreadPool()
 	:m_numThreads(0), m_bStop(false)
 {
-
+	m_threadID = 1;
 }
 
 
@@ -18,7 +18,9 @@ void ThreadPool::Initialize(int32 numThreads)
 {
 	m_numThreads = numThreads;
 	for (int i = 0; i < m_numThreads; ++i)
+	{
 		m_workers.emplace_back([this]() {WorkerThreads(); });
+	}
 }
 
 
@@ -50,6 +52,8 @@ void ThreadPool::ShutDown()
 
 void ThreadPool::WorkerThreads()
 {
+	LthreadID = m_threadID.fetch_add(1);
+
 	while (true)
 	{
 		tuple<function<bool(ThreadParam, std::promise<bool>&&)>, ThreadParam, std::promise<bool>> taskinfo;

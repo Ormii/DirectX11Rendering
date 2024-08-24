@@ -323,19 +323,19 @@ void Engine::UpdateWithThread(float dt)
 		uint32 startIdx = i;
 		uint32 endIdx = std::min(i + step, (uint32)m_models.size());
 		auto boundFunc = std::bind(&Engine::UpdateMeshesThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ 0, 0, dt,startIdx, endIdx });
+		g_ThreadManager->Launch(boundFunc, ThreadParam{0, dt,startIdx, endIdx });
 	}
 
 	// Floor
 	{
 		auto boundFunc = std::bind(&Engine::UpdateFloorThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ 0, 0, dt });
+		g_ThreadManager->Launch(boundFunc, ThreadParam{0, dt });
 	}
 
 	// CubeMap
 	{
 		auto boundFunc = std::bind(&Engine::UpdateCubeMapThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ 0, 0, dt });
+		g_ThreadManager->Launch(boundFunc, ThreadParam{0, dt });
 	}
 
 	g_ThreadManager->Join();
@@ -355,7 +355,6 @@ bool Engine::UpdateMeshesThread(ThreadParam param, promise<bool>&& pm)
 
 bool Engine::UpdateCubeMapThread(ThreadParam param, promise<bool>&& pm)
 {
-	LthreadID = param.threadID;
 	m_cubeMap->Update(param.deltatime);
 	m_cubeMap->UpdateConstantBuffers(m_device, m_context);
 
@@ -365,7 +364,6 @@ bool Engine::UpdateCubeMapThread(ThreadParam param, promise<bool>&& pm)
 
 bool Engine::UpdateFloorThread(ThreadParam param, promise<bool>&& pm)
 {
-	LthreadID = param.threadID;
 	m_floor->Update(param.deltatime);
 	m_floor->UpdateConstantBuffers(m_device, m_context);
 
@@ -375,27 +373,27 @@ bool Engine::UpdateFloorThread(ThreadParam param, promise<bool>&& pm)
 
 void Engine::RenderWithThread()
 {
-	uint32 threadId = 1;
+	uint32 commandIdx = 0;
 	uint32 step = ((uint32)m_models.size() + g_ThreadManager->GetMaxThreadCount()) / g_ThreadManager->GetMaxThreadCount();
-	for (uint32 i = 0; i < m_models.size(); i += step, threadId++)
+	for (uint32 i = 0; i < m_models.size(); i += step, commandIdx++)
 	{
 		uint32 startIdx = i;
 		uint32 endIdx = std::min(i + step, (uint32)m_models.size());
 
 		auto boundFunc = std::bind(&Engine::RenderMeshesThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ threadId, threadId, 0,startIdx, endIdx });
+		g_ThreadManager->Launch(boundFunc, ThreadParam{ commandIdx, 0,startIdx, endIdx });
 	}
 
 	{
 		auto boundFunc = std::bind(&Engine::RenderFloorThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ threadId, threadId, 0,0, 0 });
-		threadId++;
+		g_ThreadManager->Launch(boundFunc, ThreadParam{ commandIdx, 0,0, 0 });
+		commandIdx++;
 	}
 
 	{
 		auto boundFunc = std::bind(&Engine::RenderCubMapThread, this, std::placeholders::_1, std::placeholders::_2);
-		g_ThreadManager->Launch(boundFunc, ThreadParam{ threadId, threadId, 0,0, 0 });
-		threadId++;
+		g_ThreadManager->Launch(boundFunc, ThreadParam{ commandIdx, 0,0, 0 });
+		commandIdx++;
 	}
 
 	g_ThreadManager->Join();
@@ -412,7 +410,6 @@ void Engine::RenderWithThread()
 
 bool Engine::RenderMeshesThread(ThreadParam param, promise<bool>&& pm)
 {
-	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
 	m_deviceLock.ReadLock();
@@ -453,7 +450,6 @@ bool Engine::RenderMeshesThread(ThreadParam param, promise<bool>&& pm)
 
 bool Engine::RenderCubMapThread(ThreadParam param, promise<bool>&& pm)
 {
-	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
 	m_deviceLock.ReadLock();
@@ -491,7 +487,6 @@ bool Engine::RenderCubMapThread(ThreadParam param, promise<bool>&& pm)
 
 bool Engine::RenderFloorThread(ThreadParam param, promise<bool>&& pm)
 {
-	LthreadID = param.threadID;
 	ComPtr<ID3D11DeviceContext> deferredContext;
 
 	m_deviceLock.ReadLock();

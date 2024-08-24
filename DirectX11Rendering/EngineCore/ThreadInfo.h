@@ -4,7 +4,6 @@ extern thread_local uint32 LthreadID;
 
 struct ThreadParam
 {
-	uint32 threadID;
 	uint32 commandListIdx;
 	float deltatime;
 

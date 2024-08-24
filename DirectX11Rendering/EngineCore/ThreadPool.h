@@ -25,4 +25,5 @@ private:
 	bool m_bStop;
 private:
 	int32 m_numThreads;
+	atomic<int32>  m_threadID;
 };
