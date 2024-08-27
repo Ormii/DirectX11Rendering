@@ -76,18 +76,6 @@ protected:
     ComPtr<ID3D11Buffer> m_modelHullConstantBuffer;
 
 protected:
-
-    ComPtr<ID3D11VertexShader> m_normalVertexShader;
-    ComPtr<ID3D11PixelShader> m_normalPixelShader;
-
-    shared_ptr<Mesh> m_normalLines;
-
-    NormalVertexConstantData m_normalVertexConstantData;
-    ComPtr<ID3D11Buffer> m_normalVertexConstantBuffer;
-    ComPtr<ID3D11Buffer> m_normalPixelConstantBuffer;
-
-
-protected:
     BoundingSphere           m_boundingSphere;
     Vector3                  m_boundingDefaultCenter;
     float                    m_boundingDefaultRadius;

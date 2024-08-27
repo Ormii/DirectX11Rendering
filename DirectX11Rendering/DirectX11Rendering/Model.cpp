@@ -73,47 +73,6 @@ void Model::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext>
 	EngineUtility::CreateHullShader(device, context, L"ModelHullShader.hlsl", m_modelHullShader);
 	EngineUtility::CreateDomainShader(device, context, L"ModelDomainShader.hlsl", m_modelDomainShader);
 
-	/*
-	
-	m_normalLines = std::make_shared<Mesh>();
-
-	std::vector<Vertex> normalVertices;
-	std::vector<uint32_t> normalIndices;
-
-	size_t offset = 0;
-	for (const auto& meshData : meshes) {
-		for (size_t i = 0; i < meshData.vertices.size(); i++) {
-
-			auto v = meshData.vertices[i];
-
-			v.texcoord.x = 0.0f;
-			normalVertices.push_back(v);
-
-			v.texcoord.x = 1.0f;
-			normalVertices.push_back(v);
-
-			normalIndices.push_back(uint32_t(2 * (i + offset)));
-			normalIndices.push_back(uint32_t(2 * (i + offset) + 1));
-		}
-		offset += meshData.vertices.size();
-	}
-
-	EngineUtility::CreateVertexBuffer(device, context, normalVertices,
-		m_normalLines->vertexBuffer);
-	m_normalLines->m_indexCount = UINT(normalIndices.size());
-	EngineUtility::CreateIndexBuffer(device, context, normalIndices,
-		m_normalLines->indexBuffer);
-
-	EngineUtility::CreateVertexShaderAndInputLayout(
-		device, context, L"NormalVertexShader.hlsl", inputElements,
-		m_normalVertexShader, m_modelInputLayout);
-	EngineUtility::CreatePixelShader(device, context, L"NormalPixelShader.hlsl",
-		m_normalPixelShader);
-
-	EngineUtility::CreateConstantBuffer(device, context, m_normalVertexConstantData,
-		m_normalVertexConstantBuffer);
-	*/
-
 	m_boundingMesh = MakeShared<Mesh>();
 	MeshData boundingMeshData{};
 	m_boundingSphere.Radius = m_boundingDefaultRadius;
@@ -180,15 +139,6 @@ void Model::UpdateConstantBuffers(ComPtr<ID3D11Device>& device, ComPtr<ID3D11Dev
 		EngineUtility::UpdateBuffer(device, context, m_modelPixelConstantData, mesh->pixelConstantBuffer);
 		EngineUtility::UpdateBuffer(device, context, m_modelHullConstantData, mesh->hullConstantBuffer);
 	}
-	/*
-
-	if (g_bUseDrawNormals)
-	{
-		m_normalVertexConstantData.scale = 1.0f;
-		EngineUtility::UpdateBuffer(device, context, m_normalVertexConstantData,
-			m_normalVertexConstantBuffer);
-	}
-	*/
 }
 
 void Model::Render(ComPtr<ID3D11DeviceContext>& context)
@@ -262,25 +212,6 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 		if(!g_bUseDrawWireFrame)
 			context->RSSetState(pEngine->GetSolidRasterizerState().Get());
 	}
-
-
-	/*
-	if (g_bUseDrawNormals)
-	{
-		context->VSSetShader(m_normalVertexShader.Get(), 0, 0);
-		ID3D11Buffer* pptr[2] = { m_modelvertexConstantBuffer.Get(),
-								 m_normalVertexConstantBuffer.Get() };
-		context->VSSetConstantBuffers(0, 2, pptr);
-		context->PSSetShader(m_normalPixelShader.Get(), 0, 0);
-		context->IASetInputLayout(m_modelInputLayout.Get());
-		context->IASetVertexBuffers(
-			0, 1, m_normalLines->vertexBuffer.GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(m_normalLines->indexBuffer.Get(),
-			DXGI_FORMAT_R32_UINT, 0);
-		context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		context->DrawIndexed(m_normalLines->m_indexCount, 0, 0);
-	}
-	*/
 }
 
 void Model::Update(float dt)

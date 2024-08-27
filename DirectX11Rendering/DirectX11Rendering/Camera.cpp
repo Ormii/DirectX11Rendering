@@ -13,7 +13,7 @@ void Camera::Initialize(ComPtr<ID3D11Device>& device, ComPtr<ID3D11DeviceContext
 
 	MeshData meshData{};
 
-	GeometryGenerator::MakeFrustom("PerspectiveFrustom", m_aspect, m_projFovAngleY, m_nearZ, m_farZ, meshData);
+	GeometryGenerator::MakeFrustom("PerspectiveFrustom", m_aspect, XMConvertToRadians(m_projFovAngleY), m_nearZ, m_farZ, meshData);
 	m_frustomMesh = MakeShared<Mesh>();
 
 	vector<D3D11_INPUT_ELEMENT_DESC> inputElements =
@@ -115,7 +115,7 @@ void Camera::Render(ComPtr<ID3D11DeviceContext>& context)
 		{
 			UINT stride = sizeof(Vertex), offset = 0;
 			{
-				//context->RSSetState(pEngine->GetWiredRasterizerState().Get());
+				context->RSSetState(pEngine->GetWiredRasterizerState().Get());
 
 				context->IASetVertexBuffers(0, 1, m_frustomMesh->vertexBuffer.GetAddressOf(), &stride, &offset);
 				context->IASetInputLayout(m_frustomInputLayout.Get());

@@ -12,21 +12,21 @@ cbuffer ImageFilterPixelConstantBufferData : register(b0)
 }
 
 
-struct CopyImageFilterPixelShaderInput
+struct MergeImageFilterPixelShaderInput
 {
     float4 posWord : SV_POSITION;
     float2 texcoord : TEXCOORD;
 };
 
-struct CopyImageFilterPixelShaderOutput
+struct MergeImageFilterPixelShaderOutput
 {
     float4 color : SV_TARGET;
 };
 
 
-CopyImageFilterPixelShaderOutput main(CopyImageFilterPixelShaderInput input)
+MergeImageFilterPixelShaderOutput main(MergeImageFilterPixelShaderInput input)
 {
-    CopyImageFilterPixelShaderOutput output;
+    MergeImageFilterPixelShaderOutput output;
     float3 colorSrc = g_texture0.Sample(g_sampler, input.texcoord);
     float3 colorDst = g_texture1.Sample(g_sampler, input.texcoord);
     

@@ -10,21 +10,21 @@ cbuffer ImageFilterPixelConstantBufferData : register(b0)
 }
 
 
-struct CopyImageFilterPixelShaderInput
+struct BlurImageFilterPixelShaderInput
 {
     float4 posWord : SV_POSITION;
     float2 texcoord : TEXCOORD;
 };
 
-struct CopyImageFilterPixelShaderOutput
+struct BlurImageFilterPixelShaderOutput
 {
     float4 color : SV_TARGET;
 };
 
 
-CopyImageFilterPixelShaderOutput main(CopyImageFilterPixelShaderInput input)
+BlurImageFilterPixelShaderOutput main(BlurImageFilterPixelShaderInput input)
 {
-    CopyImageFilterPixelShaderOutput output;
+    BlurImageFilterPixelShaderOutput output;
     float weight[5] = { 0.0545, 0.2442, 0.4026, 0.2442, 0.0545 };
     float3 color = float3(0.0, 0.0, 0.0);
     
