@@ -43,15 +43,27 @@ bool Engine::Initialize()
 	m_cubeMap->GetScaling() = Vector3(5.0f, 5.0f, 5.0f);
 
 
+#ifndef LOD_TEST
 	{
 		m_floor = MakeShared<Model>();
 		MeshData gridMeshData{};
 		GeometryGenerator::MakeSquareGrid("FloorGrid", 10, 10, gridMeshData);
 		m_floor->Initialize(m_device, m_context, Vector<MeshData>{gridMeshData}, true, false);
 		m_floor->GetTranslation() = Vector3(0.0f, -0.5f, 0.0f);
-		m_floor->GetRotation() = Vector3(3.14/2, 0.0f, 0.0f);
+		m_floor->GetRotation() = Vector3(3.14 / 2, 0.0f, 0.0f);
 		m_floor->GetScaling() = Vector3(30.0f, 30.0f, 1.0f);
 	}
+#else
+	{
+		m_floor = MakeShared<Model>();
+		MeshData gridMeshData{};
+		GeometryGenerator::MakeSquareGrid("FloorGrid", 600, 600, gridMeshData);
+		m_floor->Initialize(m_device, m_context, Vector<MeshData>{gridMeshData}, false, false);
+		m_floor->GetTranslation() = Vector3(0.0f, -0.5f, 0.0f);
+		m_floor->GetRotation() = Vector3(3.14 / 2, 0.0f, 0.0f);
+		m_floor->GetScaling() = Vector3(30.0f, 30.0f, 1.0f);
+	}
+#endif
 
 	SetLights();
 

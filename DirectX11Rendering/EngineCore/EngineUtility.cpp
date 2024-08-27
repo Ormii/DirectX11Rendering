@@ -219,6 +219,7 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String file
     ComPtr<ID3D11Texture2D>& texture,
     ComPtr<ID3D11ShaderResourceView>& textureResourceView)
 {
+#ifndef RESOURCE_SHARE_TEST_CREATE_TEXTURE
     TextureInfo textureInfo{};
 
     g_ResourceManager->m_textureLock.WriteLock();
@@ -256,6 +257,40 @@ void EngineUtility::CreateTexture(ComPtr<ID3D11Device>&device, const String file
 
     texture = textureInfo.m_texture;
     textureResourceView = textureInfo.m_shaderResView;
+#else
+
+    TextureInfo textureInfo{};
+
+    unsigned char* img =
+        stbi_load(filename.c_str(), &textureInfo.m_width, &textureInfo.m_height, &textureInfo.m_channels, 0);
+    textureInfo.m_image.resize(textureInfo.m_width * textureInfo.m_height * 4);
+    for (size_t i = 0; i < textureInfo.m_width * textureInfo.m_height; ++i)
+    {
+        for (size_t c = 0; c < 3; ++c)
+            textureInfo.m_image[4 * i + c] = img[i * textureInfo.m_channels + c];
+        textureInfo.m_image[4 * i + 3] = 255;
+    }
+
+    D3D11_TEXTURE2D_DESC textureDesc{};
+    textureDesc.Width = textureInfo.m_width;
+    textureDesc.Height = textureInfo.m_height;
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    textureDesc.MipLevels = textureDesc.ArraySize = 1;
+    textureDesc.SampleDesc.Count = 1;
+    textureDesc.Usage = D3D11_USAGE_IMMUTABLE;
+    textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+
+    D3D11_SUBRESOURCE_DATA initData{};
+    initData.pSysMem = textureInfo.m_image.data();
+    initData.SysMemPitch = textureDesc.Width * sizeof(uint8_t) * 4;
+
+    device->CreateTexture2D(&textureDesc, &initData, textureInfo.m_texture.GetAddressOf());
+    device->CreateShaderResourceView(textureInfo.m_texture.Get(), nullptr, textureInfo.m_shaderResView.GetAddressOf());
+
+    texture = textureInfo.m_texture;
+    textureResourceView = textureInfo.m_shaderResView;
+
+#endif
 }
 
 void EngineUtility::CreateCubemapTexture(ComPtr<ID3D11Device>& device, const wchar_t* filename, ComPtr<ID3D11ShaderResourceView>& texResView)

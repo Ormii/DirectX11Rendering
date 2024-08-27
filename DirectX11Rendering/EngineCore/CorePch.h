@@ -75,3 +75,9 @@ using std::wstring;
 #define MAIN_WINDOW_HEIGHT	960
 
 #define ERRNO	-1
+
+
+//#define LOD_TEST
+//#define FRUSTOM_CULLING_TEST
+//#define RESOURCE_SHARE_TEST_CREATE_TEXTURE
+//#define THREAD_POOL_TEST

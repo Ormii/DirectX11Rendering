@@ -57,10 +57,11 @@ void ProxyModel::Render(ComPtr<ID3D11DeviceContext>& context)
 		return;
 	}
 
-
+#ifndef FRUSTOM_CULLING_TEST
 	if (!pEngine->GetFrustomCullingCamera()->CheckBoundingSphereInFrustom(m_boundingSphere,
 		Matrix::CreateTranslation(GetTranslation())))
 		return;
+#endif
 
 
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);

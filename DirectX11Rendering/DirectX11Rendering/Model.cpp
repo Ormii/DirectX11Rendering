@@ -147,9 +147,11 @@ void Model::Render(ComPtr<ID3D11DeviceContext>& context)
 	if (pEngine == nullptr)
 		return;
 	
-	if (!pEngine->GetFrustomCullingCamera()->CheckBoundingSphereInFrustom(m_boundingSphere, 
+#ifndef FRUSTOM_CULLING_TEST
+	if (!pEngine->GetFrustomCullingCamera()->CheckBoundingSphereInFrustom(m_boundingSphere,
 		Matrix::CreateTranslation(GetTranslation())))
 		return;
+#endif
 	
 
 	context->VSSetShader(m_modelVertexShader.Get(), 0, 0);
